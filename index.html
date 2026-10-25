@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#fdf6e6">
 <title>盲畫</title>
+<meta name="description" content="閉著眼睛畫，用心電感應猜。兩支手機連線的合作塗鴉小遊戲，免下載、免登入。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="盲畫｜閉著眼睛畫，用心電感應猜">
+<meta property="og:description" content="兩支手機連線的合作塗鴉小遊戲，免下載、免登入。畫家看不到自己畫什麼，你猜得出來嗎？">
+<meta property="og:url" content="https://mochachen1225-create.github.io/draw-to-guess/">
+<meta property="og:image" content="https://mochachen1225-create.github.io/draw-to-guess/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✏️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -474,10 +483,7 @@ const WORDS = {
   台灣味: ["珍珠奶茶", "大同電鍋", "台北101", "機車", "雞排", "小籠包", "臭豆腐", "滷肉飯", "牛肉麵", "蚵仔煎", "鳳梨酥", "刈包", "地瓜球", "蔥油餅", "豆花",
     "芒果冰", "肉圓", "麵線", "鹹酥雞", "茶葉蛋", "藍白拖", "紅白塑膠袋", "媽祖", "廟", "鞭炮", "天燈", "紅包", "舞龍舞獅", "夜市", "便利商店",
     "悠遊卡", "垃圾車", "統一發票", "阿里山", "日月潭", "玉山", "台灣黑熊", "石虎", "黑面琵鷺", "土地公", "布袋戲", "太陽餅", "手搖飲", "粽子", "大腸包小腸",
-    "胡椒餅", "車輪餅", "雞蛋糕", "糖葫蘆", "剉冰", "麻糬", "燒仙草", "愛玉", "甘蔗", "釋迦", "蓮霧", "安全帽", "鐵窗", "水塔", "八家將"],
-  抽象: ["星期一", "失戀", "加班", "好想放假", "週末", "無聊", "尷尬", "嫉妒", "後悔", "自由", "夢想", "壓力", "拖延症", "起床氣", "宿醉",
-    "失眠", "錯過末班車", "減肥", "發薪日", "月底", "塞車", "颱風假", "期末考", "暗戀", "已讀不回", "社恐", "鬼壓床", "中樂透", "開會", "遲到",
-    "想念", "孤單", "幸福", "生氣", "害羞", "靈感", "時差", "網路斷線", "手機沒電", "健忘", "耍廢", "驚喜", "青春", "中年危機"]
+    "胡椒餅", "車輪餅", "雞蛋糕", "糖葫蘆", "剉冰", "麻糬", "燒仙草", "愛玉", "甘蔗", "釋迦", "蓮霧", "安全帽", "鐵窗", "水塔", "八家將"]
 };
 const CONCRETE = ["動物", "食物", "日常物品", "交通工具", "台灣味"];
 // 困難題：形狀長得很像的東西放同一組，選項從同組抽
@@ -522,12 +528,42 @@ const MOODS = [
   ["失眠", "鬼壓床", "時差", "宿醉", "健忘"],
   ["自由", "夢想", "青春", "靈感", "幸福"],
   ["網路斷線", "手機沒電", "已讀不回", "錯過末班車", "遲到"],
-  ["減肥", "拖延症", "中年危機", "期末考", "無聊"]
+  ["減肥", "拖延症", "中年危機", "期末考", "無聊"],
+  ["塞車", "趕捷運", "錯過公車", "下雨天", "騎車淋雨"],
+  ["便秘", "腳麻", "打嗝", "好癢", "抽筋"],
+  ["冷氣太冷", "太熱", "冷到發抖", "流汗", "中暑"],
+  ["選擇困難", "猶豫", "糾結", "迷路", "想太多"],
+  ["吃太飽", "肚子餓", "嘴饞", "宵夜", "減肥失敗"],
+  ["被老闆罵", "被唸", "委屈", "心累", "崩潰"],
+  ["心動", "一見鍾情", "告白", "曖昧", "吃醋"],
+  ["放空", "發呆", "恍神", "想睡", "打瞌睡"],
+  ["驚嚇", "恐懼", "緊張", "心跳加速", "怕黑"],
+  ["開心", "興奮", "期待", "雀躍", "感動"],
+  ["偷懶", "摸魚", "裝忙", "請假", "翹課"],
+  ["存錢", "破產", "月光族", "剁手", "衝動購物"],
+  ["吵架", "冷戰", "和好", "道歉", "原諒"],
+  ["回憶", "懷念", "童年", "畢業", "同學會"],
+  ["運氣好", "倒楣", "水逆", "抽到大獎", "踩到狗屎"],
+  ["早起", "賴床", "熬夜", "補眠", "鬧鐘響"],
+  ["自拍", "打卡", "按讚", "追蹤", "網紅"],
+  ["追劇", "被爆雷", "等更新", "看到哭", "大結局"],
+  ["搬家", "打掃", "整理", "斷捨離", "大掃除"],
+  ["排隊", "搶票", "秒殺", "開賣", "限量"],
+  ["等待", "耐心", "不耐煩", "等很久", "等外送"],
+  ["謊言", "秘密", "八卦", "傳言", "爆料"],
+  ["拜拜", "安太歲", "擲筊", "求籤", "許願"],
+  ["過年", "拜年", "領紅包", "年夜飯", "守歲"],
+  ["媽媽的嘮叨", "叛逆期", "代溝", "寫功課", "被禁足"],
+  ["第一次約會", "分手", "復合", "劈腿", "單身"],
+  ["勇氣", "害怕", "冒險", "挑戰", "放棄"],
+  ["時間", "永遠", "瞬間", "未來", "過去"],
+  ["安靜", "吵鬧", "噪音", "寂靜", "回音"],
+  ["頭痛", "感冒", "鼻塞", "發燒", "打噴嚏"]
 ];
-const LEVELS = ["簡單", "簡單", "普通", "普通", "普通", "困難", "困難", "困難", "抽象", "抽象"];
+const LEVELS = ["簡單", "簡單", "普通", "普通", "困難", "困難", "抽象", "抽象", "抽象", "抽象"];
 const LV_BADGE = { 簡單: "⭐ 簡單", 普通: "⭐⭐ 普通", 困難: "⭐⭐⭐ 困難", 抽象: "😈 抽象" };
 const ROUNDS = 10;
-const ABSTRACT_FROM = 8;   // 第 9、10 題是抽象題
+const ABSTRACT_FROM = 6;   // 第 7～10 題是抽象題
 const T = { INTRO: 2500, INTRO_ABS: 4200, PEEK: 2000, DRAW: 10000, REVEAL: 3500 };
 const OLD_ROOM_MS = 2 * 60 * 60 * 1000;
 const BASE_URL = location.origin + location.pathname;
@@ -839,16 +875,26 @@ function onPartnerArrive() {
 }
 
 /* ================= 遊戲流程（由玩家 A 主持） ================= */
+// 最近玩過的詞記在這支手機上，下一局優先抽沒玩過的
+const SEEN_KEY = "blind-draw-seen", SEEN_MAX = 400;
+let seenWords = (() => { try { return JSON.parse(localStorage.getItem(SEEN_KEY)) || []; } catch { return []; } })();
+function markSeen(w) {
+  seenWords = seenWords.filter(x => x !== w); seenWords.push(w);
+  if (seenWords.length > SEEN_MAX) seenWords = seenWords.slice(-SEEN_MAX);
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify(seenWords)); } catch {}
+}
 function buildDeck() {
   const used = new Set(), usedGroups = new Set(), out = [];
-  const fresh = list => shuffle(list).find(w => !used.has(w));
+  const seen = new Set(seenWords);
+  const fresh = list => { const l = shuffle(list); return l.find(w => !used.has(w) && !seen.has(w)) || l.find(w => !used.has(w)); };
   const add = (lv, cat, word, pool) => {
     used.add(word);
     const opts = shuffle([word, ...shuffle(pool.filter(x => x !== word)).slice(0, 3)]);
     out.push({ lv, cat, word, opts });
   };
   const fromGroups = (lv, cat, groups) => {
-    const g = shuffle(groups).find(g => !usedGroups.has(g) && fresh(g));
+    const open = shuffle(groups).filter(g => !usedGroups.has(g) && fresh(g));
+    const g = open.find(g => g.some(w => !seen.has(w))) || open[0];
     usedGroups.add(g);
     add(lv, cat, fresh(g), g);
   };
@@ -970,6 +1016,7 @@ function startRound(r) {
     drawer: r % 2 === 0 ? "A" : "B", sel: null, pick: null, ms: null, strokes: [], revealed: false
   };
   curRound = r; lastBeep = null;
+  markSeen(rd.word);
   const cv = $("#gcv");
   requestAnimationFrame(() => { fitCanvas(cv); drawAll(cv.getContext("2d"), rd.strokes); });
   if (!isDrawer(rd)) {
@@ -1013,7 +1060,7 @@ function enterPhase(r, ph) {
 
   if (ph === "intro") {
     $("#blackout").hidden = true;
-    const abs = r === ABSTRACT_FROM ? '<div class="warn">⚠️ 抽象題來了！<br>最後兩題是「畫不出來」的東西 😈</div>' : "";
+    const abs = r === ABSTRACT_FROM ? '<div class="warn">⚠️ 抽象題來了！<br>最後四題是「畫不出來」的東西 😈</div>' : "";
     const hardNote = rd.lv === "困難" && !rounds[r - 1]?.lv?.includes("困難") ? '<div class="sub">選項開始長得很像了 👀</div>' : "";
     msg.innerHTML = `<div class="sub">第 ${r + 1} 題・${modeName(rd.lit)}</div>
       <div class="lv${rd.lv === "簡單" ? "" : " hard"}">${LV_BADGE[rd.lv] || rd.lv}</div>
@@ -1298,41 +1345,41 @@ let shareFile = null, shareUrl = null;
 async function buildShareImage(total, correct) {
   shareFile = null;
   try { await document.fonts.load("40px Huninn"); } catch {}
-  const W = 1080, pad = 40, gap = 40, tileW = 480, tileH = 640, labelH = 120, headH = 330, footH = 130;
-  const rows = Math.ceil(rounds.length / 2);
-  const H = headH + rows * (tileH + labelH + gap) + footH;
+  // 正方形 1080x1080：上面標題、中間 5x2 作品、下面網址
+  const W = 1080, H = 1080, cols = 5, pad = 36, gap = 18, tileW = 186, tileH = 248, labelH = 74, headH = 250, rowGap = 22;
   const c = document.createElement("canvas"); c.width = W; c.height = H;
   const x = c.getContext("2d");
   const F = (size, bold) => `${bold ? "bold " : ""}${size}px Huninn, "PingFang TC", "Noto Sans TC", sans-serif`;
   x.fillStyle = "#fdf6e6"; x.fillRect(0, 0, W, H);
   x.strokeStyle = "#dbe7f3"; x.lineWidth = 2;
-  for (let yy = 40; yy < H; yy += 48) { x.beginPath(); x.moveTo(0, yy); x.lineTo(W, yy); x.stroke(); }
+  for (let yy = 40; yy < H; yy += 44) { x.beginPath(); x.moveTo(0, yy); x.lineTo(W, yy); x.stroke(); }
   x.textAlign = "center"; x.fillStyle = "#3a2e2a";
-  x.font = F(110, true); x.fillText("盲畫", W / 2, 140);
-  x.font = F(46); x.fillText(`合作分數 ${total} / 1000・答對 ${correct} 題`, W / 2, 220);
-  x.font = F(42); x.fillStyle = "#e0566f"; x.fillText(commentFor(total), W / 2, 290);
-  const tile = document.createElement("canvas"); tile.width = tileW; tile.height = tileH;
+  x.font = F(96, true); x.fillText("盲畫", W / 2, 110);
+  x.font = F(40); x.fillText(`合作分數 ${total} / 1000・答對 ${correct} 題`, W / 2, 172);
+  x.font = F(36); x.fillStyle = "#e0566f"; x.fillText(commentFor(total), W / 2, 226, W - 2 * pad);
+  const gridW = cols * tileW + (cols - 1) * gap, left = (W - gridW) / 2;
+  const tile = document.createElement("canvas"); tile.width = tileW * 2; tile.height = tileH * 2;
   const tx = tile.getContext("2d");
   rounds.forEach((rd, i) => {
     if (!rd) return;
-    const col = i % 2, row = Math.floor(i / 2);
-    const ox = pad + col * (tileW + gap), oy = headH + row * (tileH + labelH + gap);
+    const col = i % cols, row = Math.floor(i / cols);
+    const ox = left + col * (tileW + gap), oy = headH + row * (tileH + labelH + rowGap);
     drawAll(tx, rd.strokes);
     x.save();
-    x.fillStyle = "#3a2e2a"; roundRect(x, ox + 6, oy + 6, tileW, tileH, 24); x.fill();
-    roundRect(x, ox, oy, tileW, tileH, 24); x.clip(); x.drawImage(tile, ox, oy);
+    x.fillStyle = "#3a2e2a"; roundRect(x, ox + 4, oy + 4, tileW, tileH, 16); x.fill();
+    roundRect(x, ox, oy, tileW, tileH, 16); x.clip(); x.drawImage(tile, ox, oy, tileW, tileH);
     x.restore();
-    x.lineWidth = 5; x.strokeStyle = "#3a2e2a"; roundRect(x, ox, oy, tileW, tileH, 24); x.stroke();
-    x.textAlign = "left"; x.fillStyle = "#8a7a72"; x.font = F(30);
-    x.fillText(`第 ${i + 1} 題・${label(rd.drawer)} 畫`, ox + 4, oy + tileH + 44);
+    x.lineWidth = 3.5; x.strokeStyle = "#3a2e2a"; roundRect(x, ox, oy, tileW, tileH, 16); x.stroke();
     const ok = scoreOf(rd) > 0;
-    x.fillStyle = "#3a2e2a"; x.font = F(36, true);
     const guessTxt = rd.pick === null ? "沒作答" : rd.opts[rd.pick];
-    x.fillText(`${rd.word} → ${guessTxt} ${ok ? "✅" : "❌"}`, ox + 4, oy + tileH + 92, tileW);
+    x.textAlign = "left";
+    x.fillStyle = "#8a7a72"; x.font = F(23); x.fillText(`題：${rd.word}`, ox + 2, oy + tileH + 32, tileW);
+    x.fillStyle = ok ? "#2f9e67" : "#e04848"; x.font = F(25, true);
+    x.fillText(`猜：${guessTxt}${ok ? " ✅" : " ❌"}`, ox + 2, oy + tileH + 64, tileW);
   });
-  x.textAlign = "center"; x.fillStyle = "#3a2e2a"; x.font = F(36);
-  x.fillText("閉著眼睛畫，你猜得出來嗎？一起來玩 👇", W / 2, H - footH + 50);
-  x.font = F(32); x.fillStyle = "#4a7fc0"; x.fillText(BASE_URL, W / 2, H - footH + 100);
+  x.textAlign = "center"; x.fillStyle = "#3a2e2a"; x.font = F(30);
+  x.fillText("閉著眼睛畫，你猜得出來嗎？一起來玩 👇", W / 2, H - 70);
+  x.font = F(28); x.fillStyle = "#4a7fc0"; x.fillText(BASE_URL, W / 2, H - 28);
   const blob = await new Promise(res => c.toBlob(res, "image/png"));
   if (!blob) return;
   shareFile = new File([blob], "盲畫.png", { type: "image/png" });
