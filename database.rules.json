@@ -47,6 +47,8 @@
           "t0": { ".validate": "newData.isNumber()" },
           "word": { ".validate": "newData.isString() && newData.val().length <= 20" },
           "cat": { ".validate": "newData.isString() && newData.val().length <= 10" },
+          "lv": { ".validate": "newData.isString() && newData.val().length <= 4" },
+          "lit": { ".validate": "newData.isBoolean()" },
           "opts": {
             "$i": { ".validate": "$i.matches(/^[0-3]$/) && newData.isString() && newData.val().length <= 20" }
           },
@@ -63,6 +65,10 @@
               "$other": { ".validate": false }
             }
           }
+        },
+        "fin": {
+          ".write": "auth != null && (root.child('rooms').child($code).child('host').val() === auth.uid || root.child('rooms').child($code).child('guest').val() === auth.uid)",
+          "$r": { ".validate": "$r.matches(/^[0-9]$/) && newData.isBoolean()" }
         },
         "answers": {
           ".write": "auth != null && (root.child('rooms').child($code).child('host').val() === auth.uid || root.child('rooms').child($code).child('guest').val() === auth.uid)",
