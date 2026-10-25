@@ -617,16 +617,20 @@ $("#createBtn").addEventListener("click", async () => {
   Snd.tap();
   const btn = $("#createBtn"); btn.disabled = true; btn.textContent = "建立中…";
   await cleanupOldRooms();
-  let made = null;
+  let made = null, lastErr = null;
   for (let i = 0; i < 12 && !made; i++) {
     const c = String(1000 + Math.floor(Math.random() * 9000));
     try {
       await update(ref(db), { [`rooms/${c}`]: { host: uid, createdAt: serverTimestamp() }, [`ages/${c}`]: serverTimestamp() });
       made = c;
-    } catch {}
+    } catch (e) { lastErr = e; }
   }
   btn.disabled = false; btn.textContent = "✏️ 建立房間";
-  if (!made) { toast("建立房間失敗，請稍後再試 🙏"); return; }
+  if (!made) {
+    const denied = /permission/i.test(String(lastErr && (lastErr.code || lastErr.message)));
+    toast(denied ? "建立房間失敗：資料庫拒絕寫入（請確認 Firebase 安全規則已發布）" : `建立房間失敗：${lastErr ? lastErr.message : "未知錯誤"}`, 6000);
+    return;
+  }
   code = made; me = "A"; isHost = true;
   enterRoom();
   $("#codeDisplay").textContent = code;
