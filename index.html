@@ -1,0 +1,1198 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#fdf6e6">
+<title>盲畫</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✏️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #3a2e2a;
+    --paper: #fdf6e6;
+    --sheet: #fffdf7;
+    --line: #dbe7f3;
+    --margin: #f4b6b6;
+    --yellow: #ffd96a;
+    --pink: #ffb8c6;
+    --mint: #a9e5c6;
+    --blue: #aed5ff;
+    --lilac: #d7c6ff;
+    --red: #ff5a5a;
+    --green: #3fbf7f;
+    --muted: #8a7a72;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "Huninn", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(90deg, transparent 0 26px, var(--margin) 26px 28px, transparent 28px),
+      repeating-linear-gradient(180deg, transparent 0 31px, var(--line) 31px 32px);
+    touch-action: manipulation;
+    -webkit-user-select: none; user-select: none;
+    overscroll-behavior: none;
+  }
+  button, input { font-family: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+
+  .screen {
+    display: none;
+    min-height: 100vh; min-height: 100dvh;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom)) 36px;
+    max-width: 480px; margin: 0 auto;
+    flex-direction: column; align-items: center; gap: 14px;
+  }
+  .screen.active { display: flex; }
+
+  .btn {
+    display: block; width: 100%; max-width: 340px;
+    font-size: 21px; font-weight: 700; letter-spacing: 1px;
+    padding: 14px 20px;
+    border: 3px solid var(--ink); border-radius: 22px;
+    background: var(--yellow);
+    box-shadow: 4px 4px 0 var(--ink);
+    cursor: pointer; text-align: center; text-decoration: none;
+    transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn-mint { background: var(--mint); }
+  .btn-blue { background: var(--blue); }
+  .btn-pink { background: var(--pink); }
+  .btn-ghost { background: var(--sheet); }
+  .btn-sm {
+    font-size: 16px; padding: 6px 14px; border: 2.5px solid var(--ink); border-radius: 14px;
+    background: var(--sheet); box-shadow: 2px 2px 0 var(--ink); cursor: pointer;
+  }
+
+  .card {
+    background: var(--sheet); border: 3px solid var(--ink); border-radius: 20px;
+    box-shadow: 4px 4px 0 var(--ink); padding: 16px 18px; width: 100%; max-width: 360px;
+  }
+  .small { font-size: 14px; color: var(--muted); margin: 0; text-align: center; }
+
+  /* 靜音鍵 */
+  .mute {
+    position: fixed; z-index: 60; top: max(10px, env(safe-area-inset-top)); right: 10px;
+    width: 44px; height: 44px; border-radius: 50%; font-size: 20px;
+    border: 2.5px solid var(--ink); background: var(--sheet); box-shadow: 2px 2px 0 var(--ink);
+    cursor: pointer; padding: 0;
+  }
+  #netWarn {
+    position: fixed; z-index: 70; left: 50%; top: max(10px, env(safe-area-inset-top)); transform: translateX(-50%);
+    background: var(--red); color: #fff; border-radius: 14px; padding: 6px 14px; font-size: 14px;
+  }
+
+  /* 首頁 */
+  .logo { margin-top: 18px; text-align: center; position: relative; }
+  .logo-title {
+    font-size: 76px; line-height: 1; font-weight: 700; letter-spacing: 8px;
+    display: inline-block; transform: rotate(-4deg);
+    text-shadow: 4px 4px 0 var(--yellow);
+  }
+  .logo svg { width: 96px; height: 50px; display: block; margin: 6px auto 0; }
+  .tagline { margin: 0; font-size: 18px; color: var(--muted); }
+  .rules ol { margin: 0; padding-left: 22px; line-height: 1.7; font-size: 16px; }
+  .rules p { margin: 8px 0 0; font-size: 15px; color: var(--muted); text-align: center; }
+  .join { display: flex; gap: 10px; width: 100%; max-width: 340px; }
+  .join input {
+    flex: 1; min-width: 0; font-size: 26px; letter-spacing: 6px; text-align: center;
+    border: 3px solid var(--ink); border-radius: 18px; padding: 10px 6px; background: var(--sheet);
+    box-shadow: inset 2px 2px 0 rgba(0,0,0,.06); -webkit-user-select: text; user-select: text;
+  }
+  .join input::placeholder { font-size: 15px; letter-spacing: 0; color: #b9aaa2; }
+  .join .btn { width: auto; flex: none; padding: 12px 18px; }
+  .or { font-size: 14px; color: var(--muted); }
+
+  /* 等待室 */
+  .code {
+    font-size: 72px; letter-spacing: 14px; font-weight: 700; padding: 10px 10px 10px 24px;
+    background: var(--yellow); border: 3px solid var(--ink); border-radius: 18px;
+    box-shadow: 5px 5px 0 var(--ink); transform: rotate(-2deg); margin: 6px 0 10px;
+  }
+  .status { font-size: 20px; text-align: center; }
+  .dots::after { content: ""; animation: dots 1.4s steps(4) infinite; }
+  @keyframes dots { 0% { content: ""; } 25% { content: "．"; } 50% { content: "．．"; } 75% { content: "．．．"; } }
+  .bounce { display: inline-block; animation: bounce 1s ease-in-out infinite; }
+  @keyframes bounce { 50% { transform: translateY(-8px); } }
+
+  /* 遊戲 */
+  #game { gap: 10px; padding-top: max(10px, env(safe-area-inset-top)); }
+  .hud { width: 100%; display: flex; align-items: center; justify-content: space-between; padding-right: 50px; }
+  .hud-l { display: flex; flex-direction: column; gap: 4px; font-size: 16px; }
+  .chip {
+    display: inline-block; font-size: 14px; padding: 2px 10px; border: 2px solid var(--ink);
+    border-radius: 12px; background: var(--mint);
+  }
+  .chip.draw { background: var(--pink); }
+  .hud-r { font-size: 16px; text-align: right; }
+  .hud-r b { font-size: 22px; }
+  .timer {
+    --p: 1;
+    width: 66px; height: 66px; border-radius: 50%; flex: none;
+    border: 3px solid var(--ink);
+    background: conic-gradient(var(--yellow) calc(var(--p) * 360deg), var(--sheet) 0);
+    display: grid; place-items: center; box-shadow: 3px 3px 0 var(--ink);
+  }
+  .timer span {
+    width: 46px; height: 46px; border-radius: 50%; background: var(--sheet); border: 2px solid var(--ink);
+    display: grid; place-items: center; font-size: 26px; font-weight: 700;
+  }
+  .timer.urgent { background: conic-gradient(var(--red) calc(var(--p) * 360deg), var(--sheet) 0); animation: wobble .5s ease-in-out infinite; }
+  .timer.urgent span { color: var(--red); }
+  .pop { animation: pop .35s ease-out; }
+  @keyframes pop { 0% { transform: scale(1.6); } 100% { transform: scale(1); } }
+  @keyframes wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg) scale(1.08); } 75% { transform: rotate(8deg) scale(1.08); } }
+
+  .stage {
+    position: relative; flex: none;
+    width: min(88vw, calc((100vh - 300px) * .75), 400px);
+    width: min(88vw, calc((100dvh - 300px) * .75), 400px);
+    aspect-ratio: 3 / 4;
+    background: var(--sheet); border: 3px solid var(--ink); border-radius: 18px;
+    box-shadow: 4px 4px 0 var(--ink); overflow: hidden;
+  }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .stage-msg {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; padding: 18px; text-align: center; background: var(--sheet);
+  }
+  .stage-msg .big { font-size: 46px; font-weight: 700; line-height: 1.2; }
+  .stage-msg .mid { font-size: 24px; }
+  .stage-msg .sub { font-size: 16px; color: var(--muted); line-height: 1.5; }
+  .stage-msg .word {
+    font-size: 50px; font-weight: 700; padding: 8px 18px; background: var(--yellow);
+    border: 3px solid var(--ink); border-radius: 16px; transform: rotate(-2deg); line-height: 1.2;
+  }
+  .stage-msg .warn {
+    font-size: 18px; background: var(--pink); border: 2.5px solid var(--ink); border-radius: 14px; padding: 8px 12px;
+    animation: wobble 1s ease-in-out infinite;
+  }
+  .peekbar { width: 80%; height: 12px; border: 2.5px solid var(--ink); border-radius: 8px; overflow: hidden; background: var(--sheet); }
+  .peekbar i { display: block; height: 100%; background: var(--red); animation: drain 2s linear forwards; }
+  @keyframes drain { from { width: 100%; } to { width: 0; } }
+  .result-ok { color: var(--green); }
+  .result-bad { color: var(--red); }
+
+  .banner {
+    position: absolute; left: 10px; right: 10px; bottom: 10px; padding: 8px 10px; text-align: center;
+    background: var(--sheet); border: 3px solid var(--ink); border-radius: 14px; font-size: 18px;
+    box-shadow: 3px 3px 0 var(--ink); animation: pop .35s ease-out;
+  }
+
+  .opts { width: 100%; max-width: 400px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt {
+    font-size: 21px; font-weight: 700; padding: 12px 6px; border: 3px solid var(--ink); border-radius: 16px;
+    box-shadow: 3px 3px 0 var(--ink); cursor: pointer; min-height: 54px; line-height: 1.15;
+    transition: transform .08s, box-shadow .08s, opacity .2s;
+  }
+  .opt:nth-child(1) { background: var(--yellow); }
+  .opt:nth-child(2) { background: var(--pink); }
+  .opt:nth-child(3) { background: var(--mint); }
+  .opt:nth-child(4) { background: var(--blue); }
+  .opt:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
+  .opt:disabled { opacity: .45; cursor: default; }
+  .opt.picked { opacity: 1; outline: 4px dashed var(--ink); outline-offset: 3px; }
+  .opt.right { opacity: 1; background: var(--green); color: #fff; }
+  .opt.wrong { opacity: 1; background: var(--red); color: #fff; text-decoration: line-through; }
+  .under { font-size: 15px; color: var(--muted); text-align: center; min-height: 20px; }
+
+  #game::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; opacity: 0;
+    box-shadow: inset 0 0 90px 10px rgba(255, 70, 70, .55);
+  }
+  body.urgent #game::after { animation: vignette 1s ease-in-out infinite; }
+  @keyframes vignette { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+
+  /* 畫家的黑幕 */
+  #blackout {
+    position: fixed; inset: 0; z-index: 50; background: #000; touch-action: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #bbox { width: min(100vw, 75vh); width: min(100vw, 75dvh); aspect-ratio: 3 / 4; pointer-events: none; }
+  #btimer {
+    position: absolute; top: max(14px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+    font-size: 40px; font-weight: 700; color: #555; pointer-events: none;
+  }
+  #btimer.urgent { color: var(--red); font-size: 64px; animation: wobble .5s ease-in-out infinite; }
+  #bhint {
+    position: absolute; bottom: 18%; left: 0; right: 0; text-align: center; color: #666; font-size: 22px;
+    pointer-events: none; opacity: 0;
+  }
+  #bhint.fade { animation: fadeout 2.2s forwards; }
+  @keyframes fadeout { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
+  #blackout.urgent { animation: redpulse 1s ease-in-out infinite; }
+  @keyframes redpulse { 0%, 100% { box-shadow: inset 0 0 0 rgba(255,40,40,0); } 50% { box-shadow: inset 0 0 120px rgba(255,40,40,.55); } }
+
+  /* 結算 */
+  .result-title { font-size: 34px; margin: 18px 0 0; }
+  .score-big { font-size: 84px; font-weight: 700; line-height: 1; text-shadow: 4px 4px 0 var(--yellow); }
+  .score-big small { font-size: 24px; color: var(--muted); text-shadow: none; }
+  .comment {
+    font-size: 22px; text-align: center; margin: 4px 0 8px; padding: 10px 16px; background: var(--pink);
+    border: 3px solid var(--ink); border-radius: 16px; transform: rotate(-1.5deg); box-shadow: 3px 3px 0 var(--ink);
+  }
+
+  /* 畫廊 */
+  .gal-head { width: 100%; display: flex; align-items: center; justify-content: space-between; padding-right: 54px; font-size: 18px; }
+  .gal-title { font-size: 17px; text-align: center; margin-bottom: 8px; }
+  .gal-info { width: 100%; max-width: 400px; font-size: 19px; line-height: 1.6; text-align: center; }
+  .gal-nav { display: flex; gap: 10px; width: 100%; max-width: 400px; }
+  .gal-nav .btn { padding: 12px 8px; }
+  .gal-nav .btn-ghost { flex: 0 0 64px; }
+  .replay-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: rgba(0,0,0,.06); }
+  .replay-bar i { display: block; height: 100%; width: 0; background: var(--yellow); }
+
+  /* 疊層 */
+  .overlay {
+    position: fixed; inset: 0; z-index: 80; background: rgba(58, 46, 42, .45);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .overlay .card { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; font-size: 19px; }
+  .overlay img { width: 100%; max-height: 55vh; object-fit: contain; border: 2px solid var(--ink); border-radius: 10px; -webkit-user-select: auto; user-select: auto; -webkit-touch-callout: default; }
+  #toast {
+    position: fixed; z-index: 90; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 16px; font-size: 16px;
+    opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; max-width: 90vw; text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<button id="muteBtn" class="mute" aria-label="靜音切換">🔊</button>
+<div id="netWarn" hidden>連線中斷，重新連線中…</div>
+
+<!-- 首頁 -->
+<section id="home" class="screen active">
+  <div class="logo">
+    <div class="logo-title">盲畫</div>
+    <svg viewBox="0 0 96 50" fill="none" stroke="#3a2e2a" stroke-width="4" stroke-linecap="round">
+      <path d="M10 18 Q30 36 48 18"/><path d="M16 26 l-5 7 M28 31 l-2 8 M40 27 l4 7"/>
+      <path d="M58 30 q8-14 16 0 t16 0" stroke="#ff8fa3"/>
+    </svg>
+  </div>
+  <p class="tagline">閉著眼睛畫，用心電感應猜</p>
+  <div class="card rules">
+    <ol>
+      <li>畫家看題目 2 秒，螢幕就變全黑</li>
+      <li>憑感覺用手指畫 10 秒，看不到自己的線</li>
+      <li>另一人看著線條即時出現，從 4 個選項搶答</li>
+    </ol>
+    <p>兩人合作・輪流當畫家・10 題一起拚高分</p>
+  </div>
+  <button id="createBtn" class="btn" disabled>✏️ 建立房間</button>
+  <div class="or">— 或輸入朋友的房間代碼 —</div>
+  <div class="join">
+    <input id="codeInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4 位數代碼" autocomplete="off">
+    <button id="joinBtn" class="btn btn-mint" disabled>加入</button>
+  </div>
+  <p id="homeStatus" class="small">連線中…</p>
+</section>
+
+<!-- 等待室 -->
+<section id="lobby" class="screen">
+  <div id="lobbyHost" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
+    <p class="small" style="font-size:18px;margin-top:40px">你的房間代碼</p>
+    <div id="codeDisplay" class="code">0000</div>
+    <p class="small" style="font-size:16px">把代碼告訴朋友，請對方在首頁輸入</p>
+    <button id="shareCodeBtn" class="btn btn-blue">📤 把代碼傳給朋友</button>
+  </div>
+  <div id="lobbyGuest" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:60px">
+    <div class="bounce" style="font-size:64px">🎨</div>
+    <p class="status">已加入房間 <b id="guestCode"></b></p>
+  </div>
+  <div class="card" style="text-align:center;margin-top:10px">
+    <div id="lobbyStatus" class="status">等待玩家 B 加入<span class="dots"></span></div>
+    <p class="small" id="lobbyRole" style="margin-top:6px"></p>
+  </div>
+  <button id="cancelBtn" class="btn btn-ghost" style="margin-top:auto">離開房間</button>
+</section>
+
+<!-- 遊戲 -->
+<section id="game" class="screen">
+  <div class="hud">
+    <div class="hud-l"><span id="roundNo">第 1 / 10 題</span><span id="roleChip" class="chip"></span></div>
+    <div id="timer" class="timer"><span id="timerNum">10</span></div>
+    <div class="hud-r">🤝 分數<br><b id="scoreNow">0</b></div>
+  </div>
+  <div class="stage">
+    <canvas id="gcv"></canvas>
+    <div id="stageMsg" class="stage-msg"></div>
+    <div id="banner" class="banner" hidden></div>
+  </div>
+  <div id="opts" class="opts"></div>
+  <div id="underMsg" class="under"></div>
+</section>
+
+<!-- 結算 -->
+<section id="result" class="screen">
+  <h2 class="result-title">遊戲結束！</h2>
+  <div class="score-big"><span id="finalScore">0</span><small> / 1000</small></div>
+  <p id="finalCorrect" style="margin:0;font-size:18px"></p>
+  <div id="finalComment" class="comment"></div>
+  <button id="galleryBtn" class="btn">🖼️ 看畫廊（重播）</button>
+  <button id="shareBtn" class="btn btn-blue">📤 分享到 LINE</button>
+  <button id="againBtn" class="btn btn-mint">🔁 再玩一局</button>
+  <p id="againStatus" class="small"></p>
+  <button id="homeBtn" class="btn btn-ghost">🏠 回首頁</button>
+</section>
+
+<!-- 畫廊 -->
+<section id="gallery" class="screen">
+  <div class="gal-head">
+    <button id="galBack" class="btn-sm">← 結算</button>
+    <span id="galIdx">1 / 10</span>
+    <button id="speedBtn" class="btn-sm">1x</button>
+  </div>
+  <div class="gal-title" id="galTitle"></div>
+  <div class="stage">
+    <canvas id="galcv"></canvas>
+    <div class="replay-bar"><i id="galProg"></i></div>
+  </div>
+  <div class="gal-info">
+    <div>題目：<b id="galWord"></b></div>
+    <div>猜的答案：<b id="galGuess"></b></div>
+  </div>
+  <div class="gal-nav">
+    <button id="galPrev" class="btn btn-ghost">◀</button>
+    <button id="galReplay" class="btn">🔁 重播</button>
+    <button id="galNext" class="btn btn-ghost">▶</button>
+  </div>
+</section>
+
+<!-- 畫家的黑幕 -->
+<div id="blackout" hidden>
+  <div id="bbox"></div>
+  <div id="btimer">10</div>
+  <div id="bhint">憑感覺畫！✏️</div>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="card">
+    <p id="ovText" style="margin:0"></p>
+    <button id="ovBtn" class="btn">🏠 回首頁</button>
+  </div>
+</div>
+
+<div id="shareOverlay" class="overlay" hidden>
+  <div class="card">
+    <p style="margin:0">長按圖片即可儲存，再傳到 LINE</p>
+    <img id="shareImg" alt="這局的作品拼圖">
+    <a id="shareDl" class="btn btn-blue" download="盲畫.png">⬇️ 下載圖片</a>
+    <button id="shareClose" class="btn btn-ghost">關閉</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {
+  getDatabase, ref, set, remove, get, push, onValue, onChildAdded, onDisconnect,
+  serverTimestamp, query, orderByValue, endAt, limitToFirst, update
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAIA_FWnrLnQ49LgBQ2Qz6x3rjJpa7y_rg",
+  authDomain: "blind-draw-8ccdb.firebaseapp.com",
+  databaseURL: "https://blind-draw-8ccdb-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "blind-draw-8ccdb",
+  storageBucket: "blind-draw-8ccdb.firebasestorage.app",
+  messagingSenderId: "347054965700",
+  appId: "1:347054965700:web:700ce562807bdb66681a91"
+};
+
+/* ================= 詞庫 ================= */
+const WORDS = {
+  動物: ["貓", "狗", "兔子", "老鼠", "大象", "長頸鹿", "獅子", "老虎", "斑馬", "猴子", "熊貓", "無尾熊", "袋鼠", "企鵝", "海豚",
+    "鯨魚", "鯊魚", "章魚", "螃蟹", "烏龜", "蛇", "青蛙", "蝴蝶", "蜜蜂", "螞蟻", "蜘蛛", "蝸牛", "瓢蟲", "毛毛蟲", "雞",
+    "鴨子", "豬", "牛", "羊", "馬", "駱駝", "河馬", "犀牛", "鱷魚", "刺蝟", "松鼠", "狐狸", "狼", "熊", "貓頭鷹",
+    "鸚鵡", "孔雀", "天鵝", "紅鶴", "恐龍", "蝙蝠", "海馬", "水母", "海星", "蚯蚓", "金魚", "浣熊", "樹懶", "獨角獸", "蜻蜓"],
+  食物: ["蘋果", "香蕉", "西瓜", "草莓", "葡萄", "鳳梨", "櫻桃", "檸檬", "橘子", "水蜜桃", "芒果", "奇異果", "漢堡", "薯條", "披薩",
+    "熱狗", "三明治", "甜甜圈", "蛋糕", "冰淇淋", "棒棒糖", "巧克力", "餅乾", "吐司", "荷包蛋", "壽司", "飯糰", "拉麵", "義大利麵", "玉米",
+    "紅蘿蔔", "茄子", "香菇", "花椰菜", "辣椒", "洋蔥", "南瓜", "番茄", "馬鈴薯", "雞腿", "牛排", "蝦子", "爆米花", "布丁", "可頌",
+    "起司", "鬆餅", "棉花糖", "泡麵", "月餅", "湯圓", "水餃", "包子", "咖啡", "牛奶", "可樂", "啤酒", "酪梨", "椰子", "火鍋"],
+  日常物品: ["雨傘", "眼鏡", "手機", "電腦", "電視", "時鐘", "鬧鐘", "檯燈", "燈泡", "椅子", "桌子", "床", "沙發", "牙刷", "牙膏",
+    "梳子", "鏡子", "剪刀", "鉛筆", "橡皮擦", "書", "鑰匙", "鎖頭", "杯子", "碗", "筷子", "湯匙", "叉子", "菜刀", "鍋子",
+    "水壺", "馬桶", "浴缸", "毛巾", "襪子", "帽子", "鞋子", "褲子", "T恤", "領帶", "手錶", "戒指", "包包", "錢包", "枕頭",
+    "吹風機", "掃把", "垃圾桶", "冰箱", "洗衣機", "電風扇", "吉他", "鋼琴", "氣球", "蠟燭", "相機", "耳機", "信封", "禮物", "衣架"],
+  交通工具: ["汽車", "公車", "腳踏車", "火車", "高鐵", "捷運", "飛機", "直升機", "輪船", "帆船", "潛水艇", "火箭", "熱氣球", "計程車", "救護車",
+    "消防車", "警車", "卡車", "挖土機", "滑板", "直排輪", "三輪車", "嬰兒車", "獨木舟", "纜車", "雲霄飛車", "馬車", "坦克", "拖拉機", "吊車",
+    "郵輪", "滑翔翼", "降落傘", "飛碟", "輪椅", "購物車", "蒸汽火車", "雪橇", "衝浪板", "戰鬥機", "水上摩托車", "鴨子船", "賽車", "旋轉木馬", "太空梭",
+    "吉普車", "雙層巴士", "紙飛機", "竹筏", "滑雪板"],
+  台灣味: ["珍珠奶茶", "大同電鍋", "台北101", "機車", "雞排", "小籠包", "臭豆腐", "滷肉飯", "牛肉麵", "蚵仔煎", "鳳梨酥", "刈包", "地瓜球", "蔥油餅", "豆花",
+    "芒果冰", "肉圓", "麵線", "鹹酥雞", "茶葉蛋", "藍白拖", "紅白塑膠袋", "媽祖", "廟", "鞭炮", "天燈", "紅包", "舞龍舞獅", "夜市", "便利商店",
+    "悠遊卡", "垃圾車", "統一發票", "阿里山", "日月潭", "玉山", "台灣黑熊", "石虎", "黑面琵鷺", "土地公", "布袋戲", "太陽餅", "手搖飲", "粽子", "大腸包小腸",
+    "胡椒餅", "車輪餅", "雞蛋糕", "糖葫蘆", "剉冰", "麻糬", "燒仙草", "愛玉", "甘蔗", "釋迦", "蓮霧", "安全帽", "鐵窗", "水塔", "八家將"],
+  抽象: ["星期一", "失戀", "加班", "好想放假", "週末", "無聊", "尷尬", "嫉妒", "後悔", "自由", "夢想", "壓力", "拖延症", "起床氣", "宿醉",
+    "失眠", "錯過末班車", "減肥", "發薪日", "月底", "塞車", "颱風假", "期末考", "暗戀", "已讀不回", "社恐", "鬼壓床", "中樂透", "開會", "遲到",
+    "想念", "孤單", "幸福", "生氣", "害羞", "靈感", "時差", "網路斷線", "手機沒電", "健忘", "耍廢", "驚喜", "青春", "中年危機"]
+};
+const CONCRETE = ["動物", "食物", "日常物品", "交通工具", "台灣味"];
+const ROUNDS = 10;
+const ABSTRACT_FROM = 8;   // 第 9、10 題是抽象題
+const T = { INTRO: 2500, INTRO_ABS: 4200, PEEK: 2000, DRAW: 10000, REVEAL: 3500 };
+const OLD_ROOM_MS = 2 * 60 * 60 * 1000;
+const BASE_URL = location.origin + location.pathname;
+
+/* ================= 小工具 ================= */
+const $ = s => document.querySelector(s);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const other = r => r === "A" ? "B" : "A";
+let screen = "home";
+function show(id) {
+  screen = id;
+  document.querySelectorAll(".screen").forEach(el => el.classList.toggle("active", el.id === id));
+  window.scrollTo(0, 0);
+}
+let toastTimer;
+function toast(msg, ms = 2600) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+}
+function retrigger(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ================= 音效 ================= */
+const Snd = {
+  ctx: null,
+  muted: (() => { try { return localStorage.getItem("blind-draw-muted") === "1"; } catch { return false; } })(),
+  unlock() {
+    if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); }
+    if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+  },
+  tone(f, d, { type = "sine", vol = .18, at = 0, to = null } = {}) {
+    if (this.muted || !this.ctx) return;
+    const c = this.ctx, t = c.currentTime + at;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t + d);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + .015);
+    g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .05);
+  },
+  tap() { this.tone(520, .08, { type: "triangle", vol: .1 }); },
+  join() { [523, 659, 784].forEach((f, i) => this.tone(f, .18, { type: "triangle", at: i * .1 })); },
+  peek() { this.tone(400, .3, { to: 900, vol: .12 }); },
+  go() { this.tone(880, .1, { type: "square", vol: .1 }); this.tone(1320, .2, { type: "square", vol: .1, at: .1 }); },
+  tick(n) { const f = { 3: 740, 2: 880, 1: 1040 }[n] || 800; this.tone(f, .13, { type: "square", vol: .14 }); this.tone(f / 2, .15, { type: "triangle", vol: .12 }); },
+  buzz() { this.tone(220, .5, { type: "sawtooth", vol: .13, to: 110 }); },
+  lock() { this.tone(660, .08, { type: "triangle", vol: .14 }); this.tone(990, .1, { type: "triangle", vol: .12, at: .07 }); },
+  correct() { [784, 1047, 1319].forEach((f, i) => this.tone(f, .2, { type: "triangle", vol: .16, at: i * .09 })); },
+  wrong() { this.tone(330, .4, { type: "triangle", vol: .16, to: 150 }); },
+  fanfare() { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => this.tone(f, .22, { type: "triangle", vol: .15, at: i * .13 })); }
+};
+function vibrate(ms) { if (!Snd.muted && navigator.vibrate) try { navigator.vibrate(ms); } catch {} }
+document.addEventListener("pointerdown", () => Snd.unlock(), { capture: true });
+function renderMute() { $("#muteBtn").textContent = Snd.muted ? "🔇" : "🔊"; }
+$("#muteBtn").addEventListener("click", e => {
+  e.stopPropagation();
+  Snd.muted = !Snd.muted;
+  try { localStorage.setItem("blind-draw-muted", Snd.muted ? "1" : "0"); } catch {}
+  renderMute(); Snd.tap();
+});
+$("#muteBtn").addEventListener("pointerdown", e => e.stopPropagation());
+renderMute();
+
+/* ================= 畫布 ================= */
+const PAPER = "#fffdf7", PEN = "#2a2320";
+function fitCanvas(cv) {
+  const r = cv.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  cv.width = Math.max(1, Math.round(r.width * dpr));
+  cv.height = Math.max(1, Math.round(r.height * dpr));
+}
+function penStyle(ctx) {
+  ctx.lineWidth = ctx.canvas.width * .03;
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  ctx.strokeStyle = PEN; ctx.fillStyle = PEN;
+}
+function drawSeg(ctx, a, b) {
+  const W = ctx.canvas.width, H = ctx.canvas.height;
+  if (!a) {
+    ctx.beginPath(); ctx.arc(b.x * W, b.y * H, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.beginPath(); ctx.moveTo(a.x * W, a.y * H); ctx.lineTo(b.x * W, b.y * H); ctx.stroke();
+  }
+}
+function drawAll(ctx, strokes, upTo = Infinity) {
+  ctx.fillStyle = PAPER; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  penStyle(ctx);
+  for (const s of strokes) {
+    if (!s) continue;
+    let prev = null;
+    for (const p of s) { if (p.t > upTo) break; drawSeg(ctx, prev, p); prev = p; }
+  }
+}
+const encodePts = pts => pts.map(p => `${Math.round(p.x * 1000)},${Math.round(p.y * 1000)},${p.t}`).join(";");
+const decodePts = str => String(str).split(";").map(s => { const [x, y, t] = s.split(",").map(Number); return { x: x / 1000, y: y / 1000, t }; })
+  .filter(p => Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.t));
+
+/* ================= Firebase ================= */
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let uid = null;
+let offset = 0;
+const serverNow = () => Date.now() + offset;
+let connected = false;
+
+let code = null, me = null, isHost = false;
+let st = null, game = null, curRound = -1, curPhase = null, endedGame = null;
+let rounds = [];
+let deck = null;
+const advanced = new Set();
+let unsubs = [], roundUnsubs = [];
+let partnerHere = false, partnerLostAt = 0;
+let readyState = {};
+let leaving = false, partnerLeft = false, starting = false;
+let lastBeep = null;
+
+const roomRef = () => ref(db, `rooms/${code}`);
+const dropRoom = c => ({ [`rooms/${c}`]: null, [`ages/${c}`]: null });
+const R = p => ref(db, `rooms/${code}/${p}`);
+
+onValue(ref(db, ".info/serverTimeOffset"), s => { offset = s.val() || 0; });
+onValue(ref(db, ".info/connected"), s => {
+  connected = !!s.val();
+  $("#netWarn").hidden = connected || !code;
+  if (connected && code) armPresence();
+});
+
+(async () => {
+  try {
+    const cred = await signInAnonymously(auth);
+    uid = cred.user.uid;
+    $("#createBtn").disabled = false; $("#joinBtn").disabled = false;
+    $("#homeStatus").textContent = "準備好了！找一個朋友一起玩吧 ✨";
+  } catch (e) {
+    console.error(e);
+    $("#homeStatus").textContent = "連不上伺服器 😢 請確認 Firebase 已開啟「匿名」登入方式，然後重新整理";
+  }
+})();
+
+const params = new URLSearchParams(location.search);
+if (/^\d{4}$/.test(params.get("room") || "")) $("#codeInput").value = params.get("room");
+
+function armPresence() {
+  if (!code || !me) return;
+  const p = R("presence/" + me);
+  set(p, true).catch(() => {});
+  onDisconnect(p).remove().catch(() => {});
+  // 遊戲結束後，任何一方離線就刪除整個房間
+  if (st && st.phase === "end") {
+    onDisconnect(roomRef()).remove().catch(() => {});
+    onDisconnect(ref(db, `ages/${code}`)).remove().catch(() => {});
+  }
+}
+
+async function cleanupOldRooms() {
+  try {
+    // ages/ 只記房號和建立時間，用來找出超過 2 小時的舊房間
+    const cutoff = serverNow() - OLD_ROOM_MS - 60000;
+    const snap = await get(query(ref(db, "ages"), orderByValue(), endAt(cutoff), limitToFirst(50)));
+    const jobs = [];
+    snap.forEach(c => {
+      jobs.push(remove(ref(db, `rooms/${c.key}`)).catch(() => {}).then(() => remove(c.ref)).catch(() => {}));
+    });
+    await Promise.all(jobs);
+  } catch (e) { console.warn("cleanup", e); }
+}
+
+/* ================= 建立 / 加入 ================= */
+$("#createBtn").addEventListener("click", async () => {
+  if (!uid) return;
+  Snd.tap();
+  const btn = $("#createBtn"); btn.disabled = true; btn.textContent = "建立中…";
+  await cleanupOldRooms();
+  let made = null;
+  for (let i = 0; i < 12 && !made; i++) {
+    const c = String(1000 + Math.floor(Math.random() * 9000));
+    try {
+      await update(ref(db), { [`rooms/${c}`]: { host: uid, createdAt: serverTimestamp() }, [`ages/${c}`]: serverTimestamp() });
+      made = c;
+    } catch {}
+  }
+  btn.disabled = false; btn.textContent = "✏️ 建立房間";
+  if (!made) { toast("建立房間失敗，請稍後再試 🙏"); return; }
+  code = made; me = "A"; isHost = true;
+  enterRoom();
+  $("#codeDisplay").textContent = code;
+  $("#lobbyHost").hidden = false; $("#lobbyGuest").hidden = true;
+  $("#lobbyStatus").innerHTML = '等待玩家 B 加入<span class="dots"></span>';
+  $("#lobbyRole").textContent = "你是玩家 A";
+  show("lobby");
+});
+
+$("#codeInput").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4); });
+$("#codeInput").addEventListener("keydown", e => { if (e.key === "Enter") $("#joinBtn").click(); });
+$("#joinBtn").addEventListener("click", async () => {
+  if (!uid) return;
+  Snd.tap();
+  const c = $("#codeInput").value.trim();
+  if (!/^\d{4}$/.test(c)) { toast("請輸入 4 位數字的房間代碼"); return; }
+  const btn = $("#joinBtn"); btn.disabled = true;
+  try { await set(ref(db, `rooms/${c}/guest`), uid); }
+  catch { btn.disabled = false; toast("找不到這個房間，或房間已經滿了 🙈"); return; }
+  btn.disabled = false;
+  if (params.has("room")) history.replaceState(null, "", BASE_URL);
+  code = c; me = "B"; isHost = false;
+  enterRoom();
+  $("#guestCode").textContent = code;
+  $("#lobbyHost").hidden = true; $("#lobbyGuest").hidden = false;
+  $("#lobbyStatus").innerHTML = '等待遊戲開始<span class="dots"></span>';
+  $("#lobbyRole").textContent = "你是玩家 B";
+  show("lobby");
+});
+
+$("#shareCodeBtn").addEventListener("click", async () => {
+  const url = `${BASE_URL}?room=${code}`;
+  const text = `來玩《盲畫》！房間代碼：${code}`;
+  if (navigator.share) { try { await navigator.share({ text, url }); } catch {} return; }
+  try { await navigator.clipboard.writeText(`${text}\n${url}`); toast("已複製邀請文字，貼給朋友吧！"); }
+  catch { toast(`房間代碼是 ${code}`); }
+});
+
+$("#cancelBtn").addEventListener("click", () => { Snd.tap(); leaveRoom(); });
+$("#homeBtn").addEventListener("click", () => { Snd.tap(); leaveRoom(); });
+$("#ovBtn").addEventListener("click", () => { Snd.tap(); $("#overlay").hidden = true; leaveRoom(); });
+
+function enterRoom() {
+  leaving = false; partnerLeft = false; partnerHere = false; partnerLostAt = 0;
+  st = null; game = null; curRound = -1; curPhase = null; endedGame = null; rounds = []; readyState = {};
+  armPresence();
+  unsubs.push(onValue(R("createdAt"), s => { if (!s.exists()) roomGone(); }, () => roomGone()));
+  unsubs.push(onValue(R("presence"), s => {
+    const v = s.val() || {};
+    const was = partnerHere;
+    partnerHere = !!v[other(me)];
+    if (partnerHere && !was) onPartnerArrive();
+    if (!partnerHere && was) partnerLostAt = Date.now();
+  }, () => {}));
+  unsubs.push(onValue(R("state"), s => onState(s.val()), () => {}));
+  unsubs.push(onValue(R("ready"), s => { readyState = s.val() || {}; onReady(); }, () => {}));
+  requestWakeLock();
+}
+
+function teardown() {
+  unsubs.forEach(f => f()); unsubs = [];
+  roundUnsubs.forEach(f => f()); roundUnsubs = [];
+  stopDrawing();
+  $("#blackout").hidden = true;
+  document.body.classList.remove("urgent");
+  if (code) { onDisconnect(roomRef()).cancel().catch(() => {}); onDisconnect(ref(db, `ages/${code}`)).cancel().catch(() => {}); }
+  code = null; me = null; isHost = false; st = null; game = null; curRound = -1; curPhase = null;
+  $("#netWarn").hidden = true;
+  releaseWakeLock();
+}
+
+async function leaveRoom() {
+  leaving = true;
+  const c = code;
+  teardown();
+  rounds = [];
+  if (c) await update(ref(db), dropRoom(c)).catch(() => {});
+  show("home");
+}
+
+function roomGone() {
+  if (leaving || !code) return;
+  if (screen === "result" || screen === "gallery") {
+    partnerLeft = true;
+    teardown();
+    renderAgain();
+    return;
+  }
+  teardown();
+  rounds = [];
+  show("home");
+  toast("房間已關閉，對方離開了 👋", 3500);
+}
+
+function onPartnerArrive() {
+  if (!st) {
+    Snd.join();
+    if (isHost) {
+      $("#lobbyStatus").textContent = "玩家 B 加入了！準備開始 🎉";
+      setTimeout(() => { if (!st && partnerHere && code) startGame(); }, 1200);
+    }
+  }
+}
+
+/* ================= 遊戲流程（由玩家 A 主持） ================= */
+function buildDeck() {
+  const used = new Set(), out = [];
+  const take = cat => {
+    let w; do { w = pick(WORDS[cat]); } while (used.has(w));
+    used.add(w);
+    const opts = shuffle([w, ...shuffle(WORDS[cat].filter(x => x !== w)).slice(0, 3)]);
+    out.push({ cat, word: w, opts });
+  };
+  for (let i = 0; i < ABSTRACT_FROM; i++) take(pick(CONCRETE));
+  for (let i = ABSTRACT_FROM; i < ROUNDS; i++) take("抽象");
+  return out;
+}
+function roundState(r, g, t0) {
+  const d = deck[r];
+  return { phase: "play", g, round: r, t0, word: d.word, cat: d.cat, opts: d.opts };
+}
+async function startGame() {
+  if (!isHost || starting) return;
+  starting = true;
+  try {
+    deck = buildDeck();
+    const g = Date.now();
+    await remove(R("ready")).catch(() => {});
+    await set(R("state"), roundState(0, g, serverNow() + 1200));
+  } catch (e) { console.error(e); toast("開始遊戲失敗，請重試"); }
+  starting = false;
+}
+async function advance() {
+  const r = st.round, g = st.g;
+  advanced.add(g + ":" + r);
+  remove(R("strokes/" + r)).catch(() => {});
+  remove(R("answers/" + r)).catch(() => {});
+  try {
+    if (r + 1 < ROUNDS) await set(R("state"), roundState(r + 1, g, serverNow() + 300));
+    else await set(R("state"), { phase: "end", g });
+  } catch (e) { console.error(e); advanced.delete(g + ":" + r); }
+}
+
+function onState(v) {
+  st = v;
+  if (!v) return;
+  if (v.g !== game) {
+    game = v.g; rounds = []; curRound = -1; curPhase = null; shareFile = null;
+    partnerLeft = false;
+    // 新的一局：取消「結束後離線就刪房間」，重新掛上在線狀態
+    onDisconnect(ref(db, `ages/${code}`)).cancel().catch(() => {});
+    onDisconnect(roomRef()).cancel().then(armPresence).catch(() => {});
+  }
+  if (v.phase === "play") { if (screen !== "game") show("game"); tick(); }
+  else if (v.phase === "end") endGame();
+}
+
+function timeline(s) {
+  const intro = s.round === ABSTRACT_FROM ? T.INTRO_ABS : T.INTRO;
+  const peek = s.t0 + intro, draw = peek + T.PEEK, end = draw + T.DRAW, rev = end + T.REVEAL;
+  return { peek, draw, end, rev };
+}
+function phaseOf(now, tl) {
+  return now < tl.peek ? "intro" : now < tl.draw ? "peek" : now < tl.end ? "draw" : now < tl.rev ? "reveal" : "done";
+}
+let tlCur = null;
+
+function tick() {
+  if (!st || st.phase !== "play" || !code) { document.body.classList.remove("urgent"); return; }
+  const now = serverNow();
+  const tl = timeline(st);
+  tlCur = tl;
+  const ph = phaseOf(now, tl);
+  if (st.round !== curRound || ph !== curPhase) enterPhase(st.round, ph);
+  updateTimers(now, tl, ph);
+  const lost = !partnerHere && partnerLostAt && Date.now() - partnerLostAt > 6000;
+  if (lost && $("#overlay").hidden) { $("#ovText").textContent = "對方好像斷線了 😢 等待重新連線中…"; $("#overlay").hidden = false; }
+  if (!lost && !$("#overlay").hidden) $("#overlay").hidden = true;
+  if (isHost && ph === "done" && !advanced.has(st.g + ":" + st.round)) advance();
+}
+setInterval(tick, 50);
+
+function updateTimers(now, tl, ph) {
+  let rem = T.DRAW;
+  if (ph === "draw") rem = tl.end - now;
+  else if (ph === "reveal" || ph === "done") rem = 0;
+  const secs = Math.ceil(rem / 1000);
+  const timer = $("#timer"), num = $("#timerNum"), bt = $("#btimer");
+  const txt = String(Math.max(0, secs));
+  if (num.textContent !== txt) { num.textContent = txt; bt.textContent = txt; }
+  timer.style.setProperty("--p", clamp(rem / T.DRAW, 0, 1));
+  const urgent = ph === "draw" && secs <= 3;
+  timer.classList.toggle("urgent", urgent);
+  bt.classList.toggle("urgent", urgent);
+  $("#blackout").classList.toggle("urgent", urgent);
+  document.body.classList.toggle("urgent", urgent);
+  if (urgent && secs >= 1 && lastBeep !== secs) {
+    lastBeep = secs;
+    Snd.tick(secs); vibrate(40);
+    retrigger(num, "pop"); retrigger(bt, "pop");
+  }
+}
+
+const isDrawer = rd => rd.drawer === me;
+const label = r => "玩家 " + r;
+const correctIdx = rd => rd.opts.indexOf(rd.word);
+const scoreOf = rd => rd.pick !== null && rd.pick === correctIdx(rd) ? Math.max(10, Math.round(100 - 90 * rd.ms / T.DRAW)) : 0;
+const totalScore = () => rounds.reduce((s, rd) => s + (rd && rd.revealed ? scoreOf(rd) : 0), 0);
+
+function startRound(r) {
+  roundUnsubs.forEach(f => f()); roundUnsubs = [];
+  const opts = Array.isArray(st.opts) ? st.opts : Object.values(st.opts || {});
+  const rd = rounds[r] = { word: st.word, cat: st.cat, opts, drawer: r % 2 === 0 ? "A" : "B", pick: null, ms: null, strokes: [], revealed: false };
+  curRound = r; lastBeep = null;
+  const cv = $("#gcv");
+  requestAnimationFrame(() => { fitCanvas(cv); drawAll(cv.getContext("2d"), rd.strokes); });
+  if (!isDrawer(rd)) {
+    roundUnsubs.push(onChildAdded(R("strokes/" + r), s => addChunk(r, s.val()), () => {}));
+  }
+  roundUnsubs.push(onValue(R("answers/" + r), s => {
+    const v = s.val();
+    if (v && rd.pick === null) { rd.pick = v.pick; rd.ms = v.ms; if (curRound === r && curPhase === "reveal") renderReveal(false); }
+  }, () => {}));
+  // 選項按鈕
+  const box = $("#opts"); box.innerHTML = "";
+  if (!isDrawer(rd)) {
+    rd.opts.forEach((o, i) => {
+      const b = document.createElement("button");
+      b.className = "opt"; b.textContent = o; b.disabled = true;
+      b.addEventListener("click", () => guess(r, i));
+      box.appendChild(b);
+    });
+  }
+  $("#roundNo").textContent = `第 ${r + 1} / ${ROUNDS} 題`;
+  const chip = $("#roleChip");
+  chip.textContent = isDrawer(rd) ? "✏️ 你是畫家" : "👀 換你猜";
+  chip.classList.toggle("draw", isDrawer(rd));
+}
+
+function enterPhase(r, ph) {
+  if (r !== curRound || !rounds[r]) startRound(r);
+  curPhase = ph;
+  const rd = rounds[r];
+  const drawer = isDrawer(rd);
+  const msg = $("#stageMsg"), under = $("#underMsg"), banner = $("#banner");
+  banner.hidden = true;
+  $("#scoreNow").textContent = totalScore();
+
+  if (ph === "intro") {
+    $("#blackout").hidden = true;
+    const abs = r === ABSTRACT_FROM ? '<div class="warn">⚠️ 抽象題來了！<br>最後兩題是「畫不出來」的東西 😈</div>' : "";
+    msg.innerHTML = `<div class="sub">第 ${r + 1} 題${r >= ABSTRACT_FROM ? "・抽象題" : ""}</div>
+      <div class="big">${drawer ? "✏️ 換你畫了！" : "👀 換你猜了！"}</div>${abs}
+      <div class="sub">${drawer ? "準備好你的手指" : `${label(other(me))} 是畫家`}</div>`;
+    msg.hidden = false;
+    under.textContent = "";
+    if (r === ABSTRACT_FROM) vibrate(80);
+  } else if (ph === "peek") {
+    Snd.peek();
+    if (drawer) {
+      msg.innerHTML = `<div class="sub">你的題目是（${esc(rd.cat)}）</div><div class="word">${esc(rd.word)}</div>
+        <div class="peekbar"><i></i></div><div class="sub">2 秒後螢幕變黑<br>憑感覺用手指畫出來！</div>`;
+    } else {
+      msg.innerHTML = `<div class="big bounce">🙈</div><div class="mid">畫家正在偷看題目…</div>
+        <div class="sub">線條會一筆一筆出現<br>看懂了就搶答，越快分數越高！</div>`;
+    }
+    msg.hidden = false;
+  } else if (ph === "draw") {
+    Snd.go();
+    if (drawer) {
+      msg.innerHTML = `<div class="mid">🖤 畫畫中…</div>`; msg.hidden = false;
+      retrigger($("#bhint"), "fade");
+      $("#blackout").hidden = false;
+      startDrawing(r);
+    } else {
+      msg.hidden = true;
+      $("#opts").querySelectorAll(".opt").forEach(b => { b.disabled = rd.pick !== null; });
+      under.textContent = rd.pick === null ? "看懂了就按！只有一次機會喔" : "";
+    }
+  } else if (ph === "reveal") {
+    if (drawer) { stopDrawing(); $("#blackout").hidden = true; }
+    document.body.classList.remove("urgent");
+    Snd.buzz();
+    rd.revealed = true;
+    renderReveal(true);
+  } else if (ph === "done") {
+    $("#underMsg").textContent = r + 1 < ROUNDS ? "下一題準備中…" : "計算分數中…";
+  }
+}
+
+function renderReveal(withSound) {
+  const rd = rounds[curRound];
+  if (!rd) return;
+  const drawer = isDrawer(rd);
+  const ci = correctIdx(rd), sc = scoreOf(rd);
+  const ok = rd.pick !== null && rd.pick === ci;
+  const result = rd.pick === null ? '<span class="result-bad">⏰ 沒有作答</span>'
+    : ok ? `<span class="result-ok">🎉 答對了！+${sc}</span>` : '<span class="result-bad">😵 猜錯了</span>';
+  $("#scoreNow").textContent = totalScore();
+  if (drawer) {
+    const g = rd.pick === null ? "（沒作答）" : esc(rd.opts[rd.pick]);
+    $("#stageMsg").innerHTML = `<div class="mid">${result}</div><div class="sub">題目</div><div class="word">${esc(rd.word)}</div>
+      <div class="sub">${label(other(me))} 猜：<b>${g}</b></div><div class="sub">你畫了什麼？到畫廊才揭曉 🤭</div>`;
+    $("#stageMsg").hidden = false;
+    $("#underMsg").textContent = "";
+  } else {
+    $("#opts").querySelectorAll(".opt").forEach((b, i) => {
+      b.disabled = true;
+      b.classList.toggle("right", i === ci);
+      b.classList.toggle("wrong", i === rd.pick && !ok);
+    });
+    const banner = $("#banner"); banner.innerHTML = result; banner.hidden = false;
+    $("#underMsg").textContent = `答案是「${rd.word}」`;
+  }
+  if (withSound) {
+    setTimeout(() => { ok ? Snd.correct() : Snd.wrong(); }, 350);
+    if (ok) vibrate(30);
+  }
+}
+
+function guess(r, i) {
+  const rd = rounds[r];
+  if (!rd || curRound !== r || curPhase !== "draw" || rd.pick !== null) return;
+  rd.pick = i;
+  rd.ms = Math.round(clamp(serverNow() - tlCur.draw, 0, T.DRAW));
+  set(R("answers/" + r), { pick: i, ms: rd.ms }).catch(() => {});
+  Snd.lock(); vibrate(20);
+  $("#opts").querySelectorAll(".opt").forEach((b, j) => { b.disabled = true; b.classList.toggle("picked", j === i); });
+  $("#underMsg").textContent = `已鎖定「${rd.opts[i]}」，等待揭曉…`;
+}
+
+function addChunk(r, v) {
+  const rd = rounds[r];
+  if (!rd || !v || typeof v.s !== "number") return;
+  const pts = decodePts(v.p);
+  if (!pts.length) return;
+  const arr = rd.strokes[v.s] || (rd.strokes[v.s] = []);
+  let prev = arr[arr.length - 1] || null;
+  arr.push(...pts);
+  if (r === curRound) {
+    const ctx = $("#gcv").getContext("2d");
+    penStyle(ctx);
+    for (const p of pts) { drawSeg(ctx, prev, p); prev = p; }
+  }
+}
+
+/* ================= 畫家：盲畫 ================= */
+let drawing = false, drawRound = -1, activePid = null, curStroke = null, pending = [], flushTimer = null;
+function startDrawing(r) {
+  drawing = true; drawRound = r; activePid = null; curStroke = null; pending = [];
+  clearInterval(flushTimer); flushTimer = setInterval(flush, 80);
+}
+function stopDrawing() {
+  if (drawing) flush();
+  drawing = false; activePid = null; curStroke = null;
+  clearInterval(flushTimer); flushTimer = null;
+}
+function addPoint(ev) {
+  if (!curStroke) return;
+  const rect = $("#bbox").getBoundingClientRect();
+  const x = clamp((ev.clientX - rect.left) / rect.width, 0, 1);
+  const y = clamp((ev.clientY - rect.top) / rect.height, 0, 1);
+  const t = Math.round(clamp(serverNow() - tlCur.draw, 0, T.DRAW));
+  const pts = curStroke.pts, last = pts[pts.length - 1];
+  if (last && Math.hypot(x - last.x, y - last.y) < .004) return;
+  const p = { x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000, t };
+  pts.push(p);
+  let e = pending[pending.length - 1];
+  if (!e || e.s !== curStroke.s || e.pts.length >= 150) { e = { s: curStroke.s, pts: [] }; pending.push(e); }
+  e.pts.push(p);
+}
+function flush() {
+  if (!pending.length || !code) return;
+  const batch = pending; pending = [];
+  for (const e of batch) if (e.pts.length) push(R("strokes/" + drawRound), { s: e.s, p: encodePts(e.pts) }).catch(() => {});
+}
+const bo = $("#blackout");
+bo.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  if (!drawing || activePid !== null) return;
+  const rd = rounds[drawRound]; if (!rd || rd.strokes.length >= 400) return;
+  activePid = e.pointerId;
+  try { bo.setPointerCapture(e.pointerId); } catch {}
+  curStroke = { s: rd.strokes.length, pts: [] };
+  rd.strokes.push(curStroke.pts);
+  addPoint(e);
+});
+bo.addEventListener("pointermove", e => {
+  if (!drawing || e.pointerId !== activePid) return;
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+  (evs.length ? evs : [e]).forEach(addPoint);
+});
+const endStroke = e => { if (e.pointerId === activePid) { activePid = null; curStroke = null; } };
+bo.addEventListener("pointerup", endStroke);
+bo.addEventListener("pointercancel", endStroke);
+bo.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
+
+/* ================= 結算 ================= */
+function commentFor(total) {
+  if (total >= 800) return "你們是心靈相通的畫家 💞";
+  if (total >= 600) return "默契好到可以去上綜藝節目了 📺";
+  if (total >= 400) return "有點默契，也有點靈異 👻";
+  if (total >= 200) return "這是抽象派吧 🎨";
+  if (total > 0) return "畢卡索看了都說讚（看不懂的那種）🖼️";
+  return "你們確定是在玩同一個遊戲嗎？🤔";
+}
+function endGame() {
+  if (endedGame === game) return;
+  endedGame = game;
+  stopDrawing();
+  roundUnsubs.forEach(f => f()); roundUnsubs = [];
+  $("#blackout").hidden = true; $("#overlay").hidden = true;
+  document.body.classList.remove("urgent");
+  rounds.forEach(rd => { if (rd) rd.revealed = true; });
+  const total = totalScore();
+  const correct = rounds.filter(rd => rd && scoreOf(rd) > 0).length;
+  $("#finalCorrect").textContent = `答對 ${correct} / ${ROUNDS} 題`;
+  $("#finalComment").textContent = commentFor(total);
+  readyState = {};
+  renderAgain();
+  show("result");
+  Snd.fanfare();
+  armPresence();
+  const el = $("#finalScore"), t0 = performance.now();
+  (function count(now) {
+    const k = clamp((now - t0) / 1200, 0, 1);
+    el.textContent = Math.round(total * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) requestAnimationFrame(count);
+  })(t0);
+  buildShareImage(total, correct).catch(e => console.warn("share image", e));
+}
+
+$("#againBtn").addEventListener("click", () => {
+  if (!code || partnerLeft) return;
+  Snd.tap();
+  set(R("ready/" + me), true).catch(() => {});
+});
+function onReady() {
+  renderAgain();
+  if (isHost && readyState.A && readyState.B && st && st.phase === "end") startGame();
+}
+function renderAgain() {
+  const btn = $("#againBtn"), s = $("#againStatus");
+  if (partnerLeft || !code) { btn.disabled = true; s.textContent = "對方已經離開房間了，畫廊還能看到你關掉網頁為止"; return; }
+  const mine = !!readyState[me], theirs = !!readyState[other(me)];
+  btn.disabled = mine;
+  btn.textContent = mine ? "⏳ 等待對方…" : "🔁 再玩一局";
+  s.textContent = theirs && !mine ? `${label(other(me))} 想再玩一局！` : mine ? "對方按下「再玩一局」就會開始" : "";
+}
+
+/* ================= 畫廊（重播） ================= */
+let gi = 0, speed = 1, replayRaf = null;
+$("#galleryBtn").addEventListener("click", () => { Snd.tap(); show("gallery"); showCard(0); });
+$("#galBack").addEventListener("click", () => { cancelAnimationFrame(replayRaf); show("result"); });
+$("#galPrev").addEventListener("click", () => showCard((gi - 1 + rounds.length) % rounds.length));
+$("#galNext").addEventListener("click", () => showCard((gi + 1) % rounds.length));
+$("#galReplay").addEventListener("click", () => startReplay());
+$("#speedBtn").addEventListener("click", () => { speed = speed === 1 ? 2 : 1; $("#speedBtn").textContent = speed + "x"; startReplay(); });
+
+function showCard(i) {
+  if (!rounds.length) return;
+  gi = i; Snd.tap();
+  const rd = rounds[i];
+  if (!rd) return;
+  $("#galIdx").textContent = `${i + 1} / ${rounds.length}`;
+  $("#galTitle").innerHTML = `第 ${i + 1} 題・${label(rd.drawer)} 畫${isDrawer(rd) ? "（你畫的！）" : ""}${i >= ABSTRACT_FROM ? "・抽象題" : ""}`;
+  $("#galWord").textContent = rd.word;
+  const ok = scoreOf(rd) > 0;
+  $("#galGuess").textContent = rd.pick === null ? "⏰ 沒作答" : `${rd.opts[rd.pick]} ${ok ? "✅ +" + scoreOf(rd) : "❌"}`;
+  $("#galGuess").style.color = ok ? "var(--green)" : "var(--red)";
+  requestAnimationFrame(() => { fitCanvas($("#galcv")); startReplay(); });
+}
+function startReplay() {
+  cancelAnimationFrame(replayRaf);
+  const rd = rounds[gi]; if (!rd) return;
+  const ctx = $("#galcv").getContext("2d");
+  const ts = rd.strokes.flat().filter(Boolean).map(p => p.t);
+  const prog = $("#galProg");
+  if (!ts.length) {
+    drawAll(ctx, []);
+    ctx.fillStyle = "#b9aaa2"; ctx.font = `${ctx.canvas.width * .06}px Huninn, sans-serif`; ctx.textAlign = "center";
+    ctx.fillText("（畫家什麼都沒畫到 😶）", ctx.canvas.width / 2, ctx.canvas.height / 2);
+    prog.style.width = "100%";
+    return;
+  }
+  const from = Math.max(0, Math.min(...ts) - 300), to = Math.max(...ts) + 300;
+  const start = performance.now();
+  const frame = now => {
+    const tt = from + (now - start) * speed;
+    drawAll(ctx, rd.strokes, tt);
+    prog.style.width = clamp((tt - from) / (to - from), 0, 1) * 100 + "%";
+    if (tt < to) replayRaf = requestAnimationFrame(frame);
+  };
+  replayRaf = requestAnimationFrame(frame);
+}
+
+/* ================= 分享拼圖 ================= */
+let shareFile = null, shareUrl = null;
+async function buildShareImage(total, correct) {
+  shareFile = null;
+  try { await document.fonts.load("40px Huninn"); } catch {}
+  const W = 1080, pad = 40, gap = 40, tileW = 480, tileH = 640, labelH = 120, headH = 330, footH = 130;
+  const rows = Math.ceil(rounds.length / 2);
+  const H = headH + rows * (tileH + labelH + gap) + footH;
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  const F = (size, bold) => `${bold ? "bold " : ""}${size}px Huninn, "PingFang TC", "Noto Sans TC", sans-serif`;
+  x.fillStyle = "#fdf6e6"; x.fillRect(0, 0, W, H);
+  x.strokeStyle = "#dbe7f3"; x.lineWidth = 2;
+  for (let yy = 40; yy < H; yy += 48) { x.beginPath(); x.moveTo(0, yy); x.lineTo(W, yy); x.stroke(); }
+  x.textAlign = "center"; x.fillStyle = "#3a2e2a";
+  x.font = F(110, true); x.fillText("盲畫", W / 2, 140);
+  x.font = F(46); x.fillText(`合作分數 ${total} / 1000・答對 ${correct} 題`, W / 2, 220);
+  x.font = F(42); x.fillStyle = "#e0566f"; x.fillText(commentFor(total), W / 2, 290);
+  const tile = document.createElement("canvas"); tile.width = tileW; tile.height = tileH;
+  const tx = tile.getContext("2d");
+  rounds.forEach((rd, i) => {
+    if (!rd) return;
+    const col = i % 2, row = Math.floor(i / 2);
+    const ox = pad + col * (tileW + gap), oy = headH + row * (tileH + labelH + gap);
+    drawAll(tx, rd.strokes);
+    x.save();
+    x.fillStyle = "#3a2e2a"; roundRect(x, ox + 6, oy + 6, tileW, tileH, 24); x.fill();
+    roundRect(x, ox, oy, tileW, tileH, 24); x.clip(); x.drawImage(tile, ox, oy);
+    x.restore();
+    x.lineWidth = 5; x.strokeStyle = "#3a2e2a"; roundRect(x, ox, oy, tileW, tileH, 24); x.stroke();
+    x.textAlign = "left"; x.fillStyle = "#8a7a72"; x.font = F(30);
+    x.fillText(`第 ${i + 1} 題・${label(rd.drawer)} 畫`, ox + 4, oy + tileH + 44);
+    const ok = scoreOf(rd) > 0;
+    x.fillStyle = "#3a2e2a"; x.font = F(36, true);
+    const guessTxt = rd.pick === null ? "沒作答" : rd.opts[rd.pick];
+    x.fillText(`${rd.word} → ${guessTxt} ${ok ? "✅" : "❌"}`, ox + 4, oy + tileH + 92, tileW);
+  });
+  x.textAlign = "center"; x.fillStyle = "#3a2e2a"; x.font = F(36);
+  x.fillText("閉著眼睛畫，你猜得出來嗎？一起來玩 👇", W / 2, H - footH + 50);
+  x.font = F(32); x.fillStyle = "#4a7fc0"; x.fillText(BASE_URL, W / 2, H - footH + 100);
+  const blob = await new Promise(res => c.toBlob(res, "image/png"));
+  if (!blob) return;
+  shareFile = new File([blob], "盲畫.png", { type: "image/png" });
+  if (shareUrl) URL.revokeObjectURL(shareUrl);
+  shareUrl = URL.createObjectURL(blob);
+}
+function roundRect(x, l, t, w, h, r) {
+  x.beginPath(); x.moveTo(l + r, t); x.arcTo(l + w, t, l + w, t + h, r); x.arcTo(l + w, t + h, l, t + h, r);
+  x.arcTo(l, t + h, l, t, r); x.arcTo(l, t, l + w, t, r); x.closePath();
+}
+$("#shareBtn").addEventListener("click", async () => {
+  Snd.tap();
+  if (!shareFile) { toast("圖片準備中，請再按一次 🙏"); return; }
+  const text = `我們在《盲畫》拿了 ${totalScore()} 分！閉著眼睛畫的你猜得出來嗎？ ${BASE_URL}`;
+  if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+    try { await navigator.share({ files: [shareFile], text }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  $("#shareImg").src = shareUrl; $("#shareDl").href = shareUrl;
+  $("#shareOverlay").hidden = false;
+});
+$("#shareClose").addEventListener("click", () => { $("#shareOverlay").hidden = true; });
+
+/* ================= 螢幕常亮 ================= */
+let wakeLock = null;
+async function requestWakeLock() { try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {} }
+function releaseWakeLock() { try { wakeLock?.release(); } catch {} wakeLock = null; }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && code) requestWakeLock(); });
+window.addEventListener("resize", () => {
+  if (screen === "game" && rounds[curRound]) { const cv = $("#gcv"); fitCanvas(cv); drawAll(cv.getContext("2d"), rounds[curRound].strokes); }
+});
+</script>
+</body>
+</html>
