@@ -6,16 +6,16 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAIA_FWnrLnQ49LgBQ2Qz6x3rjJpa7y_rg",
-  authDomain: "blind-draw-8ccdb.firebaseapp.com",
-  databaseURL: "https://blind-draw-8ccdb-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "blind-draw-8ccdb",
-  storageBucket: "blind-draw-8ccdb.firebasestorage.app",
-  messagingSenderId: "347054965700",
-  appId: "1:347054965700:web:700ce562807bdb66681a91"
+  apiKey: "AIzaSyDzdQ89Wo-MIpBJMt9x07Tdb7kTokFf-CI",
+  authDomain: "blind-draw-69397.firebaseapp.com",
+  databaseURL: "https://blind-draw-69397-default-rtdb.firebaseio.com",
+  projectId: "blind-draw-69397",
+  storageBucket: "blind-draw-69397.firebasestorage.app",
+  messagingSenderId: "1013891427946",
+  appId: "1:1013891427946:web:83d3dd937bab6e747f2413"
 };
 
-const VERSION = "2.0.0";
+const VERSION = "2.0.1";
 const CHANGES = [
   "新增單人模式：電腦畫給你猜（而且畫得很爛）",
   "新增題目包：綜合、台灣味、動物、抽象、今日挑戰",

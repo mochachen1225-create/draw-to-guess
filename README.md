@@ -15,7 +15,7 @@ A phone-browser doodle game. Draw a prompt with your screen blacked out while a 
 
 改到資料庫存的欄位時，要把 `database.rules.json` 重新貼到 Firebase：
 
-1. [Firebase 主控台](https://console.firebase.google.com) → `blind-draw` 專案
+1. [Firebase 主控台](https://console.firebase.google.com) → `blind-draw`（blind-draw-69397）專案
 2. 「Realtime Database」→「規則」(Rules) 分頁
 3. 刪掉原本內容，貼上 `database.rules.json` 的完整內容，按「發布」(Publish)
 
