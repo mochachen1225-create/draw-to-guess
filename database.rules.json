@@ -49,6 +49,8 @@
           "cat": { ".validate": "newData.isString() && newData.val().length <= 10" },
           "lv": { ".validate": "newData.isString() && newData.val().length <= 4" },
           "lit": { ".validate": "newData.isBoolean()" },
+          "th": { ".validate": "newData.isString() && newData.val().length <= 10" },
+          "mod": { ".validate": "newData.isString() && newData.val().length <= 10" },
           "opts": {
             "$i": { ".validate": "$i.matches(/^[0-3]$/) && newData.isString() && newData.val().length <= 20" }
           },
@@ -62,6 +64,18 @@
               ".validate": "newData.hasChildren(['s', 'p'])",
               "s": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 400" },
               "p": { ".validate": "newData.isString() && newData.val().length <= 3000" },
+              "$other": { ".validate": false }
+            }
+          }
+        },
+        "reacts": {
+          ".write": "auth != null && (root.child('rooms').child($code).child('host').val() === auth.uid || root.child('rooms').child($code).child('guest').val() === auth.uid)",
+          "$r": {
+            ".validate": "$r.matches(/^[0-9]$/)",
+            "$id": {
+              ".validate": "newData.hasChildren(['e', 't'])",
+              "e": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 3" },
+              "t": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20000" },
               "$other": { ".validate": false }
             }
           }

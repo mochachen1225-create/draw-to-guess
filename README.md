@@ -1,11 +1,14 @@
-# 盲畫
+# 盲畫 Blind Draw
 
-兩人連線的手機網頁小遊戲。畫家看題目 2 秒後開始畫（關燈模式螢幕全黑，看不到自己的線）；另一人看著線條即時出現，從 4 個選項猜答案。兩人合作，10 題越來越難。
+手機網頁塗鴉小遊戲，中英雙語。畫家看題目 2 秒後開始畫（關燈模式螢幕全黑，看不到自己的線）；另一人看著線條即時出現，從 4 個選項猜答案。可以兩人連線合作，也可以單人跟電腦玩（電腦會畫得很爛）。
+
+A phone-browser doodle game. Draw a prompt with your screen blacked out while a friend guesses — or play solo against a computer that draws badly on purpose. Chinese and English.
 
 👉 https://mochachen1225-create.github.io/draw-to-guess/
 
-- 整個遊戲只有一個檔案：`index.html`
-- 即時同步：Firebase Realtime Database（新加坡），匿名驗證，不收集個人資料
+- 題目包：綜合、台灣味、動物、抽象、今日挑戰（全世界同一組題目）
+- 搞怪回合、爆笑組合題、即時表情、畫廊重播、分享圖
+- 即時同步：Firebase Realtime Database，匿名驗證，不收集個人資料；單人模式完全不連網
 - 完整的設計、資料結構、規則說明與開發過程：見 [開發紀錄.md](開發紀錄.md)
 
 ## 更新安全規則

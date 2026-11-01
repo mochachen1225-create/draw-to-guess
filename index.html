@@ -161,8 +161,8 @@
 
   .stage {
     position: relative; flex: none;
-    width: min(88vw, calc((100vh - 300px) * .75), 400px);
-    width: min(88vw, calc((100dvh - 300px) * .75), 400px);
+    width: min(88vw, calc((100vh - 350px) * .75), 400px);
+    width: min(88vw, calc((100dvh - 350px) * .75), 400px);
     aspect-ratio: 3 / 4;
     background: var(--sheet); border: 3px solid var(--ink); border-radius: 18px;
     box-shadow: 4px 4px 0 var(--ink); overflow: hidden;
@@ -303,116 +303,165 @@
     opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; max-width: 90vw; text-align: center;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* v2：題目包、表情、單人模式 */
+  .picker { padding: 12px 14px; }
+  .picker-label { font-size: 15px; color: var(--muted); margin-bottom: 8px; text-align: center; }
+  .themes { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .theme {
+    font-size: 16px; font-weight: 700; padding: 6px 12px; border: 2.5px solid var(--ink); border-radius: 14px;
+    background: var(--sheet); box-shadow: 2px 2px 0 var(--ink); cursor: pointer;
+  }
+  .theme.on { background: var(--yellow); transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+  .linkbtn { background: none; border: 0; color: var(--muted); font-size: 15px; text-decoration: underline; cursor: pointer; padding: 4px; }
+  .foot { display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 14px; margin-top: 4px; }
+  #changes ul { margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.7; }
+  .chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  #modChip { background: var(--yellow); }
+  .warn.mod { background: var(--yellow); }
+  .warn small { font-size: 14px; }
+  .reacts { display: flex; gap: 10px; justify-content: center; }
+  .reacts button {
+    width: 46px; height: 40px; font-size: 22px; border: 2.5px solid var(--ink); border-radius: 14px;
+    background: var(--sheet); box-shadow: 2px 2px 0 var(--ink); cursor: pointer; padding: 0;
+  }
+  .reacts button:active { transform: translate(2px, 2px) scale(1.15); box-shadow: 0 0 0 var(--ink); }
+  .floaty {
+    position: absolute; bottom: 12%; font-size: 40px; pointer-events: none; z-index: 5;
+    animation: floatUp 1.6s ease-out forwards;
+  }
+  @keyframes floatUp { 0% { transform: translateY(0) scale(.6); opacity: 0; } 15% { opacity: 1; transform: translateY(-20px) scale(1.2); } 100% { transform: translateY(-260px) scale(1); opacity: 0; } }
+  .squares { font-size: 24px; letter-spacing: 2px; margin: 0; }
+  .result-theme { font-size: 16px; color: var(--muted); margin: 0; }
+  .row2 { display: flex; gap: 10px; width: 100%; max-width: 340px; }
+  .row2 .btn { padding: 12px 8px; font-size: 18px; }
 </style>
 </head>
 <body>
 
-<button id="muteBtn" class="mute" aria-label="靜音切換">🔊</button>
-<div id="netWarn" hidden>連線中斷，重新連線中…</div>
+<button id="muteBtn" class="mute" aria-label="sound">🔊</button>
+<div id="netWarn" hidden data-t>連線中斷，重新連線中…</div>
 
 <!-- 首頁 -->
 <section id="home" class="screen active">
   <div class="logo">
-    <div class="logo-title">盲畫</div>
+    <div class="logo-title" data-t>盲畫</div>
     <svg viewBox="0 0 96 50" fill="none" stroke="#3a2e2a" stroke-width="4" stroke-linecap="round">
       <path d="M10 18 Q30 36 48 18"/><path d="M16 26 l-5 7 M28 31 l-2 8 M40 27 l4 7"/>
       <path d="M58 30 q8-14 16 0 t16 0" stroke="#ff8fa3"/>
     </svg>
   </div>
-  <p class="tagline">閉著眼睛畫，用心電感應猜</p>
-  <div class="card rules">
-    <ol>
-      <li>畫家看題目 2 秒，然後用手指畫 10 秒</li>
-      <li>關燈畫：螢幕全黑，看不到自己的線 🌙</li>
-      <li>另一人看著線條即時出現，選好答案按送出</li>
-    </ol>
-    <p>兩人合作・輪流當畫家・10 題越來越難</p>
+  <p class="tagline" data-t>閉著眼睛畫，用心電感應猜</p>
+  <div class="card picker">
+    <div class="picker-label" data-t>選一個題目包</div>
+    <div id="themes" class="themes"></div>
+    <p id="dailyInfo" class="small" style="margin-top:8px" hidden></p>
   </div>
+  <button id="soloBtn" class="btn btn-blue" data-t>🤖 單人模式（電腦畫）</button>
   <div class="mode">
-    <button data-lit="0">🌙 關燈畫<small>看不到自己畫的</small></button>
-    <button data-lit="1">💡 開燈畫<small>看得到自己畫的</small></button>
+    <button data-lit="0" data-t>🌙 關燈畫<small>看不到自己畫的</small></button>
+    <button data-lit="1" data-t>💡 開燈畫<small>看得到自己畫的</small></button>
   </div>
-  <button id="createBtn" class="btn" disabled>✏️ 建立房間</button>
-  <div class="or">— 或輸入朋友的房間代碼 —</div>
+  <button id="createBtn" class="btn" data-t>✏️ 建立房間（兩人）</button>
+  <div class="or" data-t>— 或輸入朋友的房間代碼 —</div>
   <div class="join">
-    <input id="codeInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4 位數代碼" autocomplete="off">
-    <button id="joinBtn" class="btn btn-mint" disabled>加入</button>
+    <input id="codeInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4 位數代碼" data-tp="4 位數代碼" autocomplete="off">
+    <button id="joinBtn" class="btn btn-mint" data-t>加入</button>
   </div>
-  <p id="homeStatus" class="small">連線中…</p>
+  <button id="howBtn" class="linkbtn" data-t>❓ 怎麼玩</button>
+  <div id="howCard" class="card rules" hidden>
+    <ol>
+      <li data-t>畫家看題目 2 秒，然後用手指畫 10 秒</li>
+      <li data-t>關燈畫：螢幕全黑，看不到自己的線 🌙</li>
+      <li data-t>另一人看著線條即時出現，選好答案按送出</li>
+      <li data-t>猜的時候可以按表情，畫家重播時才看得到 😂</li>
+    </ol>
+    <p data-t>兩人合作・輪流當畫家・10 題越來越難</p>
+  </div>
+  <div class="foot"><button id="langBtn" class="linkbtn"></button>・<button id="verBtn" class="linkbtn"></button></div>
+  <div id="changes" class="card" hidden></div>
 </section>
 
 <!-- 等待室 -->
 <section id="lobby" class="screen">
   <div id="lobbyHost" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
-    <p class="small" style="font-size:18px;margin-top:40px">你的房間代碼</p>
+    <p class="small" style="font-size:18px;margin-top:40px" data-t>你的房間代碼</p>
     <div id="codeDisplay" class="code">0000</div>
-    <p class="small" style="font-size:16px">把代碼告訴朋友，請對方在首頁輸入</p>
-    <button id="shareCodeBtn" class="btn btn-blue">📤 把代碼傳給朋友</button>
+    <p class="small" style="font-size:16px" data-t>把代碼告訴朋友，請對方在首頁輸入</p>
+    <button id="shareCodeBtn" class="btn btn-blue" data-t>📤 把代碼傳給朋友</button>
   </div>
   <div id="lobbyGuest" style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:60px">
     <div class="bounce" style="font-size:64px">🎨</div>
-    <p class="status">已加入房間 <b id="guestCode"></b></p>
+    <p class="status"><span data-t>已加入房間</span> <b id="guestCode"></b></p>
   </div>
   <div class="card" style="text-align:center;margin-top:10px">
-    <div id="lobbyStatus" class="status">等待玩家 B 加入<span class="dots"></span></div>
+    <div id="lobbyStatus" class="status"></div>
     <p class="small" id="lobbyRole" style="margin-top:6px"></p>
   </div>
-  <button id="cancelBtn" class="btn btn-ghost" style="margin-top:auto">離開房間</button>
+  <button id="cancelBtn" class="btn btn-ghost" style="margin-top:auto" data-t>離開房間</button>
 </section>
 
 <!-- 遊戲 -->
 <section id="game" class="screen">
   <div class="hud">
-    <div class="hud-l"><span id="roundNo">第 1 / 10 題</span><span id="roleChip" class="chip"></span></div>
+    <div class="hud-l"><span id="roundNo"></span><span class="chips"><span id="roleChip" class="chip"></span><span id="modChip" class="chip" hidden></span></span></div>
     <div id="timer" class="timer"><span id="timerNum">10</span></div>
-    <div class="hud-r">🤝 分數<br><b id="scoreNow">0</b></div>
+    <div class="hud-r"><span data-t>🤝 分數</span><br><b id="scoreNow">0</b></div>
   </div>
-  <div class="stage">
+  <div class="stage" id="stage">
     <canvas id="gcv"></canvas>
     <div id="stageMsg" class="stage-msg"></div>
     <div id="banner" class="banner" hidden></div>
   </div>
+  <div id="reacts" class="reacts" hidden>
+    <button aria-label="lol">😂</button><button aria-label="hmm">🤔</button><button aria-label="what">😱</button><button aria-label="nice">👍</button>
+  </div>
   <div id="opts" class="opts"></div>
-  <button id="sendBtn" class="btn" hidden disabled>✅ 送出答案</button>
+  <button id="sendBtn" class="btn" hidden disabled data-t>✅ 送出答案</button>
   <div id="underMsg" class="under"></div>
 </section>
 
 <!-- 結算 -->
 <section id="result" class="screen">
-  <h2 class="result-title">遊戲結束！</h2>
+  <h2 class="result-title" data-t>遊戲結束！</h2>
+  <p id="resultTheme" class="result-theme"></p>
   <div class="score-big"><span id="finalScore">0</span><small> / 1000</small></div>
   <p id="finalCorrect" style="margin:0;font-size:18px"></p>
+  <p id="finalSquares" class="squares"></p>
   <div id="finalComment" class="comment"></div>
-  <button id="galleryBtn" class="btn">🖼️ 看畫廊（重播）</button>
-  <button id="shareBtn" class="btn btn-blue">📤 分享到 LINE</button>
-  <button id="againBtn" class="btn btn-mint">🔁 再玩一局</button>
+  <button id="galleryBtn" class="btn" data-t>🖼️ 看畫廊（重播）</button>
+  <div class="row2">
+    <button id="shareBtn" class="btn btn-blue" data-t>📤 分享圖片</button>
+    <button id="copyBtn" class="btn btn-blue" data-t>📋 複製成績</button>
+  </div>
+  <button id="againBtn" class="btn btn-mint" data-t>🔁 再玩一局</button>
   <div id="modeResult" class="mode">
-    <button data-lit="0">🌙 關燈畫<small>下一局</small></button>
-    <button data-lit="1">💡 開燈畫<small>下一局</small></button>
+    <button data-lit="0" data-t>🌙 關燈畫<small>下一局</small></button>
+    <button data-lit="1" data-t>💡 開燈畫<small>下一局</small></button>
   </div>
   <p id="againStatus" class="small"></p>
-  <button id="homeBtn" class="btn btn-ghost">🏠 回首頁</button>
+  <button id="homeBtn" class="btn btn-ghost" data-t>🏠 回首頁</button>
 </section>
 
 <!-- 畫廊 -->
 <section id="gallery" class="screen">
   <div class="gal-head">
-    <button id="galBack" class="btn-sm">← 結算</button>
+    <button id="galBack" class="btn-sm" data-t>← 結算</button>
     <span id="galIdx">1 / 10</span>
     <button id="speedBtn" class="btn-sm">1x</button>
   </div>
   <div class="gal-title" id="galTitle"></div>
-  <div class="stage">
+  <div class="stage" id="galStage">
     <canvas id="galcv"></canvas>
     <div class="replay-bar"><i id="galProg"></i></div>
   </div>
   <div class="gal-info">
-    <div>題目：<b id="galWord"></b></div>
-    <div>猜的答案：<b id="galGuess"></b></div>
+    <div><span data-t>題目：</span><b id="galWord"></b></div>
+    <div><span data-t>猜的答案：</span><b id="galGuess"></b></div>
   </div>
   <div class="gal-nav">
     <button id="galPrev" class="btn btn-ghost">◀</button>
-    <button id="galReplay" class="btn">🔁 重播</button>
+    <button id="galReplay" class="btn" data-t>🔁 重播</button>
     <button id="galNext" class="btn btn-ghost">▶</button>
   </div>
 </section>
@@ -421,995 +470,44 @@
 <div id="blackout" hidden>
   <div id="bbox"><canvas id="dcv"></canvas></div>
   <div id="btimer">10</div>
-  <div id="bhint">憑感覺畫！✏️</div>
-  <div id="bwait" hidden>👌 畫好了！等對方猜…</div>
-  <button id="doneBtn" class="btn">✅ 畫好了</button>
+  <div id="bhint"></div>
+  <div id="bwait" hidden data-t>👌 畫好了！等對方猜…</div>
+  <button id="doneBtn" class="btn" data-t>✅ 畫好了</button>
 </div>
 
 <div id="overlay" class="overlay" hidden>
   <div class="card">
     <p id="ovText" style="margin:0"></p>
-    <button id="ovBtn" class="btn">🏠 回首頁</button>
+    <button id="ovBtn" class="btn" data-t>🏠 回首頁</button>
+  </div>
+</div>
+
+<div id="busy" class="overlay" hidden>
+  <div class="card">
+    <div style="font-size:52px">😵‍💫</div>
+    <p style="margin:0" data-t>現在太多人在玩，或網路不太穩，暫時連不上 🙏</p>
+    <p class="small" data-t>可以稍後再試，或先玩單人模式！</p>
+    <button id="busySolo" class="btn btn-blue" data-t>🤖 先玩單人模式</button>
+    <button id="busyClose" class="btn btn-ghost" data-t>好</button>
   </div>
 </div>
 
 <div id="shareOverlay" class="overlay" hidden>
   <div class="card">
-    <p style="margin:0">長按圖片即可儲存，再傳到 LINE</p>
-    <img id="shareImg" alt="這局的作品拼圖">
-    <a id="shareDl" class="btn btn-blue" download="盲畫.png">⬇️ 下載圖片</a>
-    <button id="shareClose" class="btn btn-ghost">關閉</button>
+    <p style="margin:0" data-t>長按圖片即可儲存，再傳到 LINE</p>
+    <img id="shareImg" alt="">
+    <a id="shareDl" class="btn btn-blue" download="blind-draw.png" data-t>⬇️ 下載圖片</a>
+    <button id="shareClose" class="btn btn-ghost" data-t>關閉</button>
   </div>
 </div>
 
 <div id="toast"></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import {
-  getDatabase, ref, set, remove, get, push, onValue, onChildAdded, onDisconnect,
-  serverTimestamp, query, orderByValue, endAt, limitToFirst, update
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAIA_FWnrLnQ49LgBQ2Qz6x3rjJpa7y_rg",
-  authDomain: "blind-draw-8ccdb.firebaseapp.com",
-  databaseURL: "https://blind-draw-8ccdb-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "blind-draw-8ccdb",
-  storageBucket: "blind-draw-8ccdb.firebasestorage.app",
-  messagingSenderId: "347054965700",
-  appId: "1:347054965700:web:700ce562807bdb66681a91"
-};
-
-/* ================= 詞庫 ================= */
-const WORDS = {
-  動物: ["貓", "狗", "兔子", "老鼠", "大象", "長頸鹿", "獅子", "老虎", "斑馬", "猴子", "熊貓", "無尾熊", "袋鼠", "企鵝", "海豚",
-    "鯨魚", "鯊魚", "章魚", "螃蟹", "烏龜", "蛇", "青蛙", "蝴蝶", "蜜蜂", "螞蟻", "蜘蛛", "蝸牛", "瓢蟲", "毛毛蟲", "雞",
-    "鴨子", "豬", "牛", "羊", "馬", "駱駝", "河馬", "犀牛", "鱷魚", "刺蝟", "松鼠", "狐狸", "狼", "熊", "貓頭鷹",
-    "鸚鵡", "孔雀", "天鵝", "紅鶴", "恐龍", "蝙蝠", "海馬", "水母", "海星", "蚯蚓", "金魚", "浣熊", "樹懶", "獨角獸", "蜻蜓"],
-  食物: ["蘋果", "香蕉", "西瓜", "草莓", "葡萄", "鳳梨", "櫻桃", "檸檬", "橘子", "水蜜桃", "芒果", "奇異果", "漢堡", "薯條", "披薩",
-    "熱狗", "三明治", "甜甜圈", "蛋糕", "冰淇淋", "棒棒糖", "巧克力", "餅乾", "吐司", "荷包蛋", "壽司", "飯糰", "拉麵", "義大利麵", "玉米",
-    "紅蘿蔔", "茄子", "香菇", "花椰菜", "辣椒", "洋蔥", "南瓜", "番茄", "馬鈴薯", "雞腿", "牛排", "蝦子", "爆米花", "布丁", "可頌",
-    "起司", "鬆餅", "棉花糖", "泡麵", "月餅", "湯圓", "水餃", "包子", "咖啡", "牛奶", "可樂", "啤酒", "酪梨", "椰子", "火鍋"],
-  日常物品: ["雨傘", "眼鏡", "手機", "電腦", "電視", "時鐘", "鬧鐘", "檯燈", "燈泡", "椅子", "桌子", "床", "沙發", "牙刷", "牙膏",
-    "梳子", "鏡子", "剪刀", "鉛筆", "橡皮擦", "書", "鑰匙", "鎖頭", "杯子", "碗", "筷子", "湯匙", "叉子", "菜刀", "鍋子",
-    "水壺", "馬桶", "浴缸", "毛巾", "襪子", "帽子", "鞋子", "褲子", "T恤", "領帶", "手錶", "戒指", "包包", "錢包", "枕頭",
-    "吹風機", "掃把", "垃圾桶", "冰箱", "洗衣機", "電風扇", "吉他", "鋼琴", "氣球", "蠟燭", "相機", "耳機", "信封", "禮物", "衣架"],
-  交通工具: ["汽車", "公車", "腳踏車", "火車", "高鐵", "捷運", "飛機", "直升機", "輪船", "帆船", "潛水艇", "火箭", "熱氣球", "計程車", "救護車",
-    "消防車", "警車", "卡車", "挖土機", "滑板", "直排輪", "三輪車", "嬰兒車", "獨木舟", "纜車", "雲霄飛車", "馬車", "坦克", "拖拉機", "吊車",
-    "郵輪", "滑翔翼", "降落傘", "飛碟", "輪椅", "購物車", "蒸汽火車", "雪橇", "衝浪板", "戰鬥機", "水上摩托車", "鴨子船", "賽車", "旋轉木馬", "太空梭",
-    "吉普車", "雙層巴士", "紙飛機", "竹筏", "滑雪板"],
-  台灣味: ["珍珠奶茶", "大同電鍋", "台北101", "機車", "雞排", "小籠包", "臭豆腐", "滷肉飯", "牛肉麵", "蚵仔煎", "鳳梨酥", "刈包", "地瓜球", "蔥油餅", "豆花",
-    "芒果冰", "肉圓", "麵線", "鹹酥雞", "茶葉蛋", "藍白拖", "紅白塑膠袋", "媽祖", "廟", "鞭炮", "天燈", "紅包", "舞龍舞獅", "夜市", "便利商店",
-    "悠遊卡", "垃圾車", "統一發票", "阿里山", "日月潭", "玉山", "台灣黑熊", "石虎", "黑面琵鷺", "土地公", "布袋戲", "太陽餅", "手搖飲", "粽子", "大腸包小腸",
-    "胡椒餅", "車輪餅", "雞蛋糕", "糖葫蘆", "剉冰", "麻糬", "燒仙草", "愛玉", "甘蔗", "釋迦", "蓮霧", "安全帽", "鐵窗", "水塔", "八家將"]
-};
-const CONCRETE = ["動物", "食物", "日常物品", "交通工具", "台灣味"];
-// 困難題：形狀長得很像的東西放同一組，選項從同組抽
-const LOOKALIKE = [
-  ["櫻桃", "蘋果", "西瓜", "氣球", "番茄", "柳丁"],
-  ["太陽", "向日葵", "獅子", "花", "煙火"],
-  ["長頸鹿", "鴕鳥", "恐龍", "駱駝", "天鵝"],
-  ["蛇", "蚯蚓", "毛毛蟲", "拉麵", "鞋帶"],
-  ["貓", "狐狸", "老虎", "狗", "兔子"],
-  ["雨傘", "香菇", "降落傘", "水母", "檯燈"],
-  ["冰淇淋", "紅蘿蔔", "披薩", "粽子", "聖誕樹"],
-  ["汽車", "公車", "卡車", "救護車", "計程車"],
-  ["飛機", "火箭", "小鳥", "紙飛機", "直升機"],
-  ["香蕉", "月亮", "船", "辣椒", "微笑"],
-  ["湯匙", "網球拍", "鏡子", "平底鍋", "棒棒糖"],
-  ["蝸牛", "蚊香", "肉桂捲", "颱風", "漩渦"],
-  ["金魚", "鯨魚", "鯊魚", "海豚", "潛水艇"],
-  ["蜘蛛", "章魚", "螃蟹", "螞蟻", "蜈蚣"],
-  ["房子", "帳篷", "廟", "城堡", "狗屋"],
-  ["台北101", "竹筍", "鉛筆", "火箭", "燈塔"],
-  ["珍珠奶茶", "杯子", "水桶", "垃圾桶", "花盆"],
-  ["大同電鍋", "鍋子", "茶壺", "飯碗", "便當"],
-  ["機車", "腳踏車", "輪椅", "嬰兒車", "滑板車"],
-  ["小籠包", "包子", "布丁", "洋蔥", "大蒜"],
-  ["眼鏡", "望遠鏡", "耳機", "啞鈴", "數字8"],
-  ["蝴蝶", "蝴蝶結", "蜻蜓", "蜜蜂", "風箏"],
-  ["樹", "花椰菜", "雲", "棉花糖", "綿羊"],
-  ["手機", "電視", "書", "信封", "遙控器"],
-  ["雞", "鴨子", "企鵝", "貓頭鷹", "小雞"],
-  ["鑰匙", "叉子", "剪刀", "牙刷", "梳子"],
-  ["雞排", "地瓜", "葉子", "台灣地圖", "鞋墊"],
-  ["天燈", "熱氣球", "燈籠", "鈴鐺", "蓮霧"],
-  ["豆腐", "方糖", "骰子", "禮物", "麻將"],
-  ["鳳梨", "刺蝟", "仙人掌", "榴槤", "松果"]
-];
-// 抽象題：意境相近的放同一組，選項更虛無飄渺
-const MOODS = [
-  ["失戀", "想念", "孤單", "後悔", "暗戀"],
-  ["星期一", "加班", "開會", "壓力", "月底"],
-  ["好想放假", "週末", "颱風假", "發薪日", "耍廢"],
-  ["起床氣", "生氣", "嫉妒", "尷尬", "社恐"],
-  ["失眠", "鬼壓床", "時差", "宿醉", "健忘"],
-  ["自由", "夢想", "青春", "靈感", "幸福"],
-  ["網路斷線", "手機沒電", "已讀不回", "錯過末班車", "遲到"],
-  ["減肥", "拖延症", "中年危機", "期末考", "無聊"],
-  ["塞車", "趕捷運", "錯過公車", "下雨天", "騎車淋雨"],
-  ["便秘", "腳麻", "打嗝", "好癢", "抽筋"],
-  ["冷氣太冷", "太熱", "冷到發抖", "流汗", "中暑"],
-  ["選擇困難", "猶豫", "糾結", "迷路", "想太多"],
-  ["吃太飽", "肚子餓", "嘴饞", "宵夜", "減肥失敗"],
-  ["被老闆罵", "被唸", "委屈", "心累", "崩潰"],
-  ["心動", "一見鍾情", "告白", "曖昧", "吃醋"],
-  ["放空", "發呆", "恍神", "想睡", "打瞌睡"],
-  ["驚嚇", "恐懼", "緊張", "心跳加速", "怕黑"],
-  ["開心", "興奮", "期待", "雀躍", "感動"],
-  ["偷懶", "摸魚", "裝忙", "請假", "翹課"],
-  ["存錢", "破產", "月光族", "剁手", "衝動購物"],
-  ["吵架", "冷戰", "和好", "道歉", "原諒"],
-  ["回憶", "懷念", "童年", "畢業", "同學會"],
-  ["運氣好", "倒楣", "水逆", "抽到大獎", "踩到狗屎"],
-  ["早起", "賴床", "熬夜", "補眠", "鬧鐘響"],
-  ["自拍", "打卡", "按讚", "追蹤", "網紅"],
-  ["追劇", "被爆雷", "等更新", "看到哭", "大結局"],
-  ["搬家", "打掃", "整理", "斷捨離", "大掃除"],
-  ["排隊", "搶票", "秒殺", "開賣", "限量"],
-  ["等待", "耐心", "不耐煩", "等很久", "等外送"],
-  ["謊言", "秘密", "八卦", "傳言", "爆料"],
-  ["拜拜", "安太歲", "擲筊", "求籤", "許願"],
-  ["過年", "拜年", "領紅包", "年夜飯", "守歲"],
-  ["媽媽的嘮叨", "叛逆期", "代溝", "寫功課", "被禁足"],
-  ["第一次約會", "分手", "復合", "劈腿", "單身"],
-  ["勇氣", "害怕", "冒險", "挑戰", "放棄"],
-  ["時間", "永遠", "瞬間", "未來", "過去"],
-  ["安靜", "吵鬧", "噪音", "寂靜", "回音"],
-  ["頭痛", "感冒", "鼻塞", "發燒", "打噴嚏"]
-];
-const LEVELS = ["簡單", "簡單", "普通", "普通", "困難", "困難", "抽象", "抽象", "抽象", "抽象"];
-const LV_BADGE = { 簡單: "⭐ 簡單", 普通: "⭐⭐ 普通", 困難: "⭐⭐⭐ 困難", 抽象: "😈 抽象" };
-const ROUNDS = 10;
-const ABSTRACT_FROM = 6;   // 第 7～10 題是抽象題
-const T = { INTRO: 2500, INTRO_ABS: 4200, PEEK: 2000, DRAW: 10000, REVEAL: 3500 };
-const OLD_ROOM_MS = 2 * 60 * 60 * 1000;
-const BASE_URL = location.origin + location.pathname;
-
-/* ================= 小工具 ================= */
-const $ = s => document.querySelector(s);
-const pick = a => a[Math.floor(Math.random() * a.length)];
-const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const other = r => r === "A" ? "B" : "A";
-let screen = "home";
-function show(id) {
-  screen = id;
-  document.querySelectorAll(".screen").forEach(el => el.classList.toggle("active", el.id === id));
-  window.scrollTo(0, 0);
-}
-let toastTimer;
-function toast(msg, ms = 2600) {
-  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), ms);
-}
-function retrigger(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
-
-/* ================= 音效 ================= */
-const Snd = {
-  ctx: null,
-  muted: (() => { try { return localStorage.getItem("blind-draw-muted") === "1"; } catch { return false; } })(),
-  unlock() {
-    if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); }
-    if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
-  },
-  tone(f, d, { type = "sine", vol = .18, at = 0, to = null } = {}) {
-    if (this.muted || !this.ctx) return;
-    const c = this.ctx, t = c.currentTime + at;
-    const o = c.createOscillator(), g = c.createGain();
-    o.type = type; o.frequency.setValueAtTime(f, t);
-    if (to) o.frequency.exponentialRampToValueAtTime(to, t + d);
-    g.gain.setValueAtTime(.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t + .015);
-    g.gain.exponentialRampToValueAtTime(.0001, t + d);
-    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .05);
-  },
-  tap() { this.tone(520, .08, { type: "triangle", vol: .1 }); },
-  join() { [523, 659, 784].forEach((f, i) => this.tone(f, .18, { type: "triangle", at: i * .1 })); },
-  peek() { this.tone(400, .3, { to: 900, vol: .12 }); },
-  go() { this.tone(880, .1, { type: "square", vol: .1 }); this.tone(1320, .2, { type: "square", vol: .1, at: .1 }); },
-  tick(n) { const f = { 3: 740, 2: 880, 1: 1040 }[n] || 800; this.tone(f, .13, { type: "square", vol: .14 }); this.tone(f / 2, .15, { type: "triangle", vol: .12 }); },
-  buzz() { this.tone(220, .5, { type: "sawtooth", vol: .13, to: 110 }); },
-  lock() { this.tone(660, .08, { type: "triangle", vol: .14 }); this.tone(990, .1, { type: "triangle", vol: .12, at: .07 }); },
-  correct() { [784, 1047, 1319].forEach((f, i) => this.tone(f, .2, { type: "triangle", vol: .16, at: i * .09 })); },
-  wrong() { this.tone(330, .4, { type: "triangle", vol: .16, to: 150 }); },
-  fanfare() { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => this.tone(f, .22, { type: "triangle", vol: .15, at: i * .13 })); }
-};
-function vibrate(ms) { if (!Snd.muted && navigator.vibrate) try { navigator.vibrate(ms); } catch {} }
-document.addEventListener("pointerdown", () => Snd.unlock(), { capture: true });
-function renderMute() { $("#muteBtn").textContent = Snd.muted ? "🔇" : "🔊"; }
-$("#muteBtn").addEventListener("click", e => {
-  e.stopPropagation();
-  Snd.muted = !Snd.muted;
-  try { localStorage.setItem("blind-draw-muted", Snd.muted ? "1" : "0"); } catch {}
-  renderMute(); Snd.tap();
-});
-$("#muteBtn").addEventListener("pointerdown", e => e.stopPropagation());
-renderMute();
-
-/* ================= 開燈 / 關燈 ================= */
-let litMode = (() => { try { return localStorage.getItem("blind-draw-lit") === "1"; } catch { return false; } })();
-const modeName = lit => lit ? "💡 開燈畫" : "🌙 關燈畫";
-function renderModes() {
-  document.querySelectorAll(".mode button").forEach(b => b.classList.toggle("on", (b.dataset.lit === "1") === litMode));
-}
-document.querySelectorAll(".mode button").forEach(b => b.addEventListener("click", () => {
-  litMode = b.dataset.lit === "1";
-  try { localStorage.setItem("blind-draw-lit", litMode ? "1" : "0"); } catch {}
-  Snd.tap(); renderModes();
-  if (screen === "lobby" && isHost) $("#lobbyRole").textContent = `你是玩家 A・${modeName(litMode)}`;
-}));
-renderModes();
-
-/* ================= 畫布 ================= */
-const PAPER = "#fffdf7", PEN = "#2a2320";
-function fitCanvas(cv) {
-  const r = cv.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-  cv.width = Math.max(1, Math.round(r.width * dpr));
-  cv.height = Math.max(1, Math.round(r.height * dpr));
-}
-function penStyle(ctx) {
-  ctx.lineWidth = ctx.canvas.width * .03;
-  ctx.lineCap = "round"; ctx.lineJoin = "round";
-  ctx.strokeStyle = PEN; ctx.fillStyle = PEN;
-}
-function drawSeg(ctx, a, b) {
-  const W = ctx.canvas.width, H = ctx.canvas.height;
-  if (!a) {
-    ctx.beginPath(); ctx.arc(b.x * W, b.y * H, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fill();
-  } else {
-    ctx.beginPath(); ctx.moveTo(a.x * W, a.y * H); ctx.lineTo(b.x * W, b.y * H); ctx.stroke();
-  }
-}
-function drawAll(ctx, strokes, upTo = Infinity) {
-  ctx.fillStyle = PAPER; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  penStyle(ctx);
-  for (const s of strokes) {
-    if (!s) continue;
-    let prev = null;
-    for (const p of s) { if (p.t > upTo) break; drawSeg(ctx, prev, p); prev = p; }
-  }
-}
-const encodePts = pts => pts.map(p => `${Math.round(p.x * 1000)},${Math.round(p.y * 1000)},${p.t}`).join(";");
-const decodePts = str => String(str).split(";").map(s => { const [x, y, t] = s.split(",").map(Number); return { x: x / 1000, y: y / 1000, t }; })
-  .filter(p => Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.t));
-
-/* ================= Firebase ================= */
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-
-let uid = null;
-let offset = 0;
-const serverNow = () => Date.now() + offset;
-let connected = false;
-
-let code = null, me = null, isHost = false;
-let st = null, game = null, curRound = -1, curPhase = null, endedGame = null;
-let rounds = [];
-let deck = null;
-const advanced = new Set();
-let unsubs = [], roundUnsubs = [];
-let partnerHere = false, partnerLostAt = 0;
-let readyState = {};
-let leaving = false, partnerLeft = false, starting = false;
-let lastBeep = null;
-
-const roomRef = () => ref(db, `rooms/${code}`);
-const dropRoom = c => ({ [`rooms/${c}`]: null, [`ages/${c}`]: null });
-const R = p => ref(db, `rooms/${code}/${p}`);
-
-onValue(ref(db, ".info/serverTimeOffset"), s => { offset = s.val() || 0; });
-onValue(ref(db, ".info/connected"), s => {
-  connected = !!s.val();
-  $("#netWarn").hidden = connected || !code;
-  if (connected && code) armPresence();
-});
-
-(async () => {
-  try {
-    const cred = await signInAnonymously(auth);
-    uid = cred.user.uid;
-    $("#createBtn").disabled = false; $("#joinBtn").disabled = false;
-    $("#homeStatus").textContent = "準備好了！找一個朋友一起玩吧 ✨";
-  } catch (e) {
-    console.error(e);
-    $("#homeStatus").textContent = "連不上伺服器 😢 請確認 Firebase 已開啟「匿名」登入方式，然後重新整理";
-  }
-})();
-
-const params = new URLSearchParams(location.search);
-if (/^\d{4}$/.test(params.get("room") || "")) $("#codeInput").value = params.get("room");
-
-function armPresence() {
-  if (!code || !me) return;
-  const p = R("presence/" + me);
-  set(p, true).catch(() => {});
-  onDisconnect(p).remove().catch(() => {});
-  // 遊戲結束後，任何一方離線就刪除整個房間
-  if (st && st.phase === "end") {
-    onDisconnect(roomRef()).remove().catch(() => {});
-    onDisconnect(ref(db, `ages/${code}`)).remove().catch(() => {});
-  }
-}
-
-async function cleanupOldRooms() {
-  try {
-    // ages/ 只記房號和建立時間，用來找出超過 2 小時的舊房間
-    const cutoff = serverNow() - OLD_ROOM_MS - 60000;
-    const snap = await get(query(ref(db, "ages"), orderByValue(), endAt(cutoff), limitToFirst(50)));
-    const jobs = [];
-    snap.forEach(c => {
-      jobs.push(remove(ref(db, `rooms/${c.key}`)).catch(() => {}).then(() => remove(c.ref)).catch(() => {}));
-    });
-    await Promise.all(jobs);
-  } catch (e) { console.warn("cleanup", e); }
-}
-
-/* ================= 建立 / 加入 ================= */
-$("#createBtn").addEventListener("click", async () => {
-  if (!uid) return;
-  Snd.tap();
-  const btn = $("#createBtn"); btn.disabled = true; btn.textContent = "建立中…";
-  await cleanupOldRooms();
-  let made = null, lastErr = null;
-  for (let i = 0; i < 12 && !made; i++) {
-    const c = String(1000 + Math.floor(Math.random() * 9000));
-    try {
-      await update(ref(db), { [`rooms/${c}`]: { host: uid, createdAt: serverTimestamp() }, [`ages/${c}`]: serverTimestamp() });
-      made = c;
-    } catch (e) { lastErr = e; }
-  }
-  btn.disabled = false; btn.textContent = "✏️ 建立房間";
-  if (!made) {
-    const denied = /permission/i.test(String(lastErr && (lastErr.code || lastErr.message)));
-    toast(denied ? "建立房間失敗：資料庫拒絕寫入（請確認 Firebase 安全規則已發布）" : `建立房間失敗：${lastErr ? lastErr.message : "未知錯誤"}`, 6000);
-    return;
-  }
-  code = made; me = "A"; isHost = true;
-  enterRoom();
-  $("#codeDisplay").textContent = code;
-  $("#lobbyHost").hidden = false; $("#lobbyGuest").hidden = true;
-  $("#lobbyStatus").innerHTML = '等待玩家 B 加入<span class="dots"></span>';
-  $("#lobbyRole").textContent = `你是玩家 A・${modeName(litMode)}`;
-  show("lobby");
-});
-
-$("#codeInput").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4); });
-$("#codeInput").addEventListener("keydown", e => { if (e.key === "Enter") $("#joinBtn").click(); });
-$("#joinBtn").addEventListener("click", async () => {
-  if (!uid) return;
-  Snd.tap();
-  const c = $("#codeInput").value.trim();
-  if (!/^\d{4}$/.test(c)) { toast("請輸入 4 位數字的房間代碼"); return; }
-  const btn = $("#joinBtn"); btn.disabled = true;
-  try { await set(ref(db, `rooms/${c}/guest`), uid); }
-  catch { btn.disabled = false; toast("找不到這個房間，或房間已經滿了 🙈"); return; }
-  btn.disabled = false;
-  if (params.has("room")) history.replaceState(null, "", BASE_URL);
-  code = c; me = "B"; isHost = false;
-  enterRoom();
-  $("#guestCode").textContent = code;
-  $("#lobbyHost").hidden = true; $("#lobbyGuest").hidden = false;
-  $("#lobbyStatus").innerHTML = '等待遊戲開始<span class="dots"></span>';
-  $("#lobbyRole").textContent = "你是玩家 B";
-  show("lobby");
-});
-
-$("#shareCodeBtn").addEventListener("click", async () => {
-  const url = `${BASE_URL}?room=${code}`;
-  const text = `來玩《盲畫》！房間代碼：${code}`;
-  if (navigator.share) { try { await navigator.share({ text, url }); } catch {} return; }
-  try { await navigator.clipboard.writeText(`${text}\n${url}`); toast("已複製邀請文字，貼給朋友吧！"); }
-  catch { toast(`房間代碼是 ${code}`); }
-});
-
-$("#cancelBtn").addEventListener("click", () => { Snd.tap(); leaveRoom(); });
-$("#homeBtn").addEventListener("click", () => { Snd.tap(); leaveRoom(); });
-$("#ovBtn").addEventListener("click", () => { Snd.tap(); $("#overlay").hidden = true; leaveRoom(); });
-
-function enterRoom() {
-  leaving = false; partnerLeft = false; partnerHere = false; partnerLostAt = 0;
-  st = null; game = null; curRound = -1; curPhase = null; endedGame = null; rounds = []; readyState = {};
-  armPresence();
-  unsubs.push(onValue(R("createdAt"), s => { if (!s.exists()) roomGone(); }, () => roomGone()));
-  unsubs.push(onValue(R("presence"), s => {
-    const v = s.val() || {};
-    const was = partnerHere;
-    partnerHere = !!v[other(me)];
-    if (partnerHere && !was) onPartnerArrive();
-    if (!partnerHere && was) partnerLostAt = Date.now();
-  }, () => {}));
-  unsubs.push(onValue(R("state"), s => onState(s.val()), () => {}));
-  unsubs.push(onValue(R("ready"), s => { readyState = s.val() || {}; onReady(); }, () => {}));
-  requestWakeLock();
-}
-
-function teardown() {
-  unsubs.forEach(f => f()); unsubs = [];
-  roundUnsubs.forEach(f => f()); roundUnsubs = [];
-  stopDrawing();
-  $("#blackout").hidden = true;
-  document.body.classList.remove("urgent");
-  if (code) { onDisconnect(roomRef()).cancel().catch(() => {}); onDisconnect(ref(db, `ages/${code}`)).cancel().catch(() => {}); }
-  code = null; me = null; isHost = false; st = null; game = null; curRound = -1; curPhase = null;
-  $("#netWarn").hidden = true;
-  releaseWakeLock();
-}
-
-async function leaveRoom() {
-  leaving = true;
-  const c = code;
-  teardown();
-  rounds = [];
-  if (c) await update(ref(db), dropRoom(c)).catch(() => {});
-  show("home");
-}
-
-function roomGone() {
-  if (leaving || !code) return;
-  if (screen === "result" || screen === "gallery") {
-    partnerLeft = true;
-    teardown();
-    renderAgain();
-    return;
-  }
-  teardown();
-  rounds = [];
-  show("home");
-  toast("房間已關閉，對方離開了 👋", 3500);
-}
-
-function onPartnerArrive() {
-  if (!st) {
-    Snd.join();
-    if (isHost) {
-      $("#lobbyStatus").textContent = "玩家 B 加入了！準備開始 🎉";
-      setTimeout(() => { if (!st && partnerHere && code) startGame(); }, 1200);
-    }
-  }
-}
-
-/* ================= 遊戲流程（由玩家 A 主持） ================= */
-// 最近玩過的詞記在這支手機上，下一局優先抽沒玩過的
-const SEEN_KEY = "blind-draw-seen", SEEN_MAX = 400;
-let seenWords = (() => { try { return JSON.parse(localStorage.getItem(SEEN_KEY)) || []; } catch { return []; } })();
-function markSeen(w) {
-  seenWords = seenWords.filter(x => x !== w); seenWords.push(w);
-  if (seenWords.length > SEEN_MAX) seenWords = seenWords.slice(-SEEN_MAX);
-  try { localStorage.setItem(SEEN_KEY, JSON.stringify(seenWords)); } catch {}
-}
-function buildDeck() {
-  const used = new Set(), usedGroups = new Set(), out = [];
-  const seen = new Set(seenWords);
-  const fresh = list => { const l = shuffle(list); return l.find(w => !used.has(w) && !seen.has(w)) || l.find(w => !used.has(w)); };
-  const add = (lv, cat, word, pool) => {
-    used.add(word);
-    const opts = shuffle([word, ...shuffle(pool.filter(x => x !== word)).slice(0, 3)]);
-    out.push({ lv, cat, word, opts });
-  };
-  const fromGroups = (lv, cat, groups) => {
-    const open = shuffle(groups).filter(g => !usedGroups.has(g) && fresh(g));
-    const g = open.find(g => g.some(w => !seen.has(w))) || open[0];
-    usedGroups.add(g);
-    add(lv, cat, fresh(g), g);
-  };
-  LEVELS.forEach(lv => {
-    if (lv === "簡單") {
-      // 干擾選項來自其他類別，差很多
-      const cat = pick(CONCRETE);
-      add(lv, cat, fresh(WORDS[cat]), shuffle(CONCRETE.filter(c => c !== cat)).slice(0, 3).map(c => pick(WORDS[c])));
-    } else if (lv === "普通") {
-      const cat = pick(CONCRETE);
-      add(lv, cat, fresh(WORDS[cat]), WORDS[cat]);
-    } else if (lv === "困難") fromGroups(lv, "長得很像", LOOKALIKE);
-    else fromGroups(lv, "抽象", MOODS);
-  });
-  return out;
-}
-function roundState(r, g, t0) {
-  const d = deck[r];
-  return { phase: "play", g, round: r, t0, word: d.word, cat: d.cat, lv: d.lv, opts: d.opts, lit: litMode };
-}
-async function startGame() {
-  if (!isHost || starting) return;
-  starting = true;
-  try {
-    deck = buildDeck();
-    const g = Date.now();
-    await remove(R("ready")).catch(() => {});
-    await set(R("state"), roundState(0, g, serverNow() + 1200));
-  } catch (e) { console.error(e); toast("開始遊戲失敗，請重試"); }
-  starting = false;
-}
-async function advance() {
-  const r = st.round, g = st.g;
-  advanced.add(g + ":" + r);
-  remove(R("strokes/" + r)).catch(() => {});
-  remove(R("answers/" + r)).catch(() => {});
-  remove(R("fin/" + r)).catch(() => {});
-  try {
-    if (r + 1 < ROUNDS) await set(R("state"), roundState(r + 1, g, serverNow() + 300));
-    else await set(R("state"), { phase: "end", g });
-  } catch (e) { console.error(e); advanced.delete(g + ":" + r); }
-}
-
-function onState(v) {
-  st = v;
-  if (!v) return;
-  if (v.g !== game) {
-    game = v.g; rounds = []; curRound = -1; curPhase = null; shareFile = null;
-    partnerLeft = false;
-    // 新的一局：取消「結束後離線就刪房間」，重新掛上在線狀態
-    onDisconnect(ref(db, `ages/${code}`)).cancel().catch(() => {});
-    onDisconnect(roomRef()).cancel().then(armPresence).catch(() => {});
-  }
-  if (v.phase === "play") { if (screen !== "game") show("game"); tick(); }
-  else if (v.phase === "end") endGame();
-}
-
-function timeline(s) {
-  const intro = s.round === ABSTRACT_FROM ? T.INTRO_ABS : T.INTRO;
-  const peek = s.t0 + intro, draw = peek + T.PEEK;
-  let end = draw + T.DRAW;
-  // 猜的人一送出答案，這題就提早結束
-  const rd = rounds[s.round];
-  if (rd && rd.g === s.g && rd.pick !== null && rd.ms !== null) end = Math.min(end, draw + rd.ms + 500);
-  return { peek, draw, end, rev: end + T.REVEAL };
-}
-function phaseOf(now, tl) {
-  return now < tl.peek ? "intro" : now < tl.draw ? "peek" : now < tl.end ? "draw" : now < tl.rev ? "reveal" : "done";
-}
-let tlCur = null;
-
-function tick() {
-  if (!st || st.phase !== "play" || !code) { document.body.classList.remove("urgent"); return; }
-  const now = serverNow();
-  const tl = timeline(st);
-  tlCur = tl;
-  const ph = phaseOf(now, tl);
-  if (st.round !== curRound || ph !== curPhase) enterPhase(st.round, ph);
-  updateTimers(now, tl, ph);
-  const lost = !partnerHere && partnerLostAt && Date.now() - partnerLostAt > 6000;
-  if (lost && $("#overlay").hidden) { $("#ovText").textContent = "對方好像斷線了 😢 等待重新連線中…"; $("#overlay").hidden = false; }
-  if (!lost && !$("#overlay").hidden) $("#overlay").hidden = true;
-  if (isHost && ph === "done" && !advanced.has(st.g + ":" + st.round)) advance();
-}
-setInterval(tick, 50);
-
-function updateTimers(now, tl, ph) {
-  let rem = T.DRAW;
-  if (ph === "draw") rem = tl.end - now;
-  else if (ph === "reveal" || ph === "done") rem = 0;
-  const secs = Math.ceil(rem / 1000);
-  const timer = $("#timer"), num = $("#timerNum"), bt = $("#btimer");
-  const txt = String(Math.max(0, secs));
-  if (num.textContent !== txt) { num.textContent = txt; bt.textContent = txt; }
-  timer.style.setProperty("--p", clamp(rem / T.DRAW, 0, 1));
-  const urgent = ph === "draw" && secs <= 3;
-  timer.classList.toggle("urgent", urgent);
-  bt.classList.toggle("urgent", urgent);
-  $("#blackout").classList.toggle("urgent", urgent);
-  document.body.classList.toggle("urgent", urgent);
-  if (urgent && secs >= 1 && lastBeep !== secs) {
-    lastBeep = secs;
-    Snd.tick(secs); vibrate(40);
-    retrigger(num, "pop"); retrigger(bt, "pop");
-  }
-}
-
-const isDrawer = rd => rd.drawer === me;
-const label = r => "玩家 " + r;
-const correctIdx = rd => rd.opts.indexOf(rd.word);
-const scoreOf = rd => rd.pick !== null && rd.pick === correctIdx(rd) ? Math.max(10, Math.round(100 - 90 * rd.ms / T.DRAW)) : 0;
-const totalScore = () => rounds.reduce((s, rd) => s + (rd && rd.revealed ? scoreOf(rd) : 0), 0);
-
-function startRound(r) {
-  roundUnsubs.forEach(f => f()); roundUnsubs = [];
-  const opts = Array.isArray(st.opts) ? st.opts : Object.values(st.opts || {});
-  const rd = rounds[r] = {
-    g: st.g, word: st.word, cat: st.cat, lv: st.lv || LEVELS[r], lit: !!st.lit, opts,
-    drawer: r % 2 === 0 ? "A" : "B", sel: null, pick: null, ms: null, strokes: [], revealed: false
-  };
-  curRound = r; lastBeep = null;
-  markSeen(rd.word);
-  const cv = $("#gcv");
-  requestAnimationFrame(() => { fitCanvas(cv); drawAll(cv.getContext("2d"), rd.strokes); });
-  if (!isDrawer(rd)) {
-    roundUnsubs.push(onChildAdded(R("strokes/" + r), s => addChunk(r, s.val()), () => {}));
-    roundUnsubs.push(onValue(R("fin/" + r), s => {
-      if (s.val() && curRound === r && curPhase === "draw" && rd.pick === null) {
-        $("#underMsg").textContent = "✏️ 畫家說畫好了！選好答案按送出";
-        Snd.tap();
-      }
-    }, () => {}));
-  }
-  roundUnsubs.push(onValue(R("answers/" + r), s => {
-    const v = s.val();
-    if (v && rd.pick === null) { rd.pick = v.pick; rd.ms = v.ms; if (curRound === r && curPhase === "reveal") renderReveal(false); }
-  }, () => {}));
-  // 選項按鈕
-  const box = $("#opts"); box.innerHTML = "";
-  if (!isDrawer(rd)) {
-    rd.opts.forEach((o, i) => {
-      const b = document.createElement("button");
-      b.className = "opt"; b.textContent = o; b.disabled = true;
-      b.addEventListener("click", () => choose(r, i));
-      box.appendChild(b);
-    });
-  }
-  $("#sendBtn").hidden = isDrawer(rd); $("#sendBtn").disabled = true;
-  $("#roundNo").textContent = `第 ${r + 1} / ${ROUNDS} 題`;
-  const chip = $("#roleChip");
-  chip.textContent = isDrawer(rd) ? "✏️ 你是畫家" : "👀 換你猜";
-  chip.classList.toggle("draw", isDrawer(rd));
-}
-
-function enterPhase(r, ph) {
-  if (r !== curRound || !rounds[r]) startRound(r);
-  curPhase = ph;
-  const rd = rounds[r];
-  const drawer = isDrawer(rd);
-  const msg = $("#stageMsg"), under = $("#underMsg"), banner = $("#banner");
-  banner.hidden = true;
-  $("#scoreNow").textContent = totalScore();
-
-  if (ph === "intro") {
-    $("#blackout").hidden = true;
-    const abs = r === ABSTRACT_FROM ? '<div class="warn">⚠️ 抽象題來了！<br>最後四題是「畫不出來」的東西 😈</div>' : "";
-    const hardNote = rd.lv === "困難" && !rounds[r - 1]?.lv?.includes("困難") ? '<div class="sub">選項開始長得很像了 👀</div>' : "";
-    msg.innerHTML = `<div class="sub">第 ${r + 1} 題・${modeName(rd.lit)}</div>
-      <div class="lv${rd.lv === "簡單" ? "" : " hard"}">${LV_BADGE[rd.lv] || rd.lv}</div>
-      <div class="big">${drawer ? "✏️ 換你畫了！" : "👀 換你猜了！"}</div>${abs}${hardNote}
-      <div class="sub">${drawer ? "準備好你的手指" : `${label(other(me))} 是畫家`}</div>`;
-    msg.hidden = false;
-    under.textContent = "";
-    if (r === ABSTRACT_FROM) vibrate(80);
-  } else if (ph === "peek") {
-    Snd.peek();
-    if (drawer) {
-      msg.innerHTML = `<div class="sub">你的題目是（${LV_BADGE[rd.lv] || rd.lv}）</div><div class="word">${esc(rd.word)}</div>
-        <div class="peekbar"><i></i></div><div class="sub">${rd.lit ? "2 秒後開始畫<br>畫完可以按「畫好了」" : "2 秒後螢幕變黑<br>憑感覺用手指畫出來！"}</div>`;
-    } else {
-      msg.innerHTML = `<div class="big bounce">🙈</div><div class="mid">畫家正在偷看題目…</div>
-        <div class="sub">線條會一筆一筆出現<br>看懂了就搶答，越快分數越高！</div>`;
-    }
-    msg.hidden = false;
-  } else if (ph === "draw") {
-    Snd.go();
-    if (drawer) {
-      msg.innerHTML = `<div class="mid">🖤 畫畫中…</div>`; msg.hidden = false;
-      const bo = $("#blackout");
-      bo.classList.toggle("lit", rd.lit);
-      $("#bhint").textContent = rd.lit ? "開始畫！✏️" : "憑感覺畫！✏️";
-      retrigger($("#bhint"), "fade");
-      $("#bwait").hidden = true; $("#doneBtn").hidden = false;
-      bo.hidden = false;
-      startDrawing(r);
-    } else {
-      msg.hidden = true;
-      $("#opts").querySelectorAll(".opt").forEach(b => { b.disabled = rd.pick !== null; });
-      $("#sendBtn").disabled = rd.sel === null || rd.pick !== null;
-      under.textContent = rd.pick === null ? "選好答案按送出，越快分數越高！" : "";
-    }
-  } else if (ph === "reveal") {
-    if (drawer) { stopDrawing(); $("#blackout").hidden = true; }
-    // 時間到但選了沒送出：直接幫忙送出
-    else if (rd.pick === null && rd.sel !== null) submitAnswer(r, T.DRAW);
-    document.body.classList.remove("urgent");
-    Snd.buzz();
-    rd.revealed = true;
-    renderReveal(true);
-  } else if (ph === "done") {
-    $("#underMsg").textContent = r + 1 < ROUNDS ? "下一題準備中…" : "計算分數中…";
-  }
-}
-
-function renderReveal(withSound) {
-  const rd = rounds[curRound];
-  if (!rd) return;
-  const drawer = isDrawer(rd);
-  const ci = correctIdx(rd), sc = scoreOf(rd);
-  const ok = rd.pick !== null && rd.pick === ci;
-  const result = rd.pick === null ? '<span class="result-bad">⏰ 沒有作答</span>'
-    : ok ? `<span class="result-ok">🎉 答對了！+${sc}</span>` : '<span class="result-bad">😵 猜錯了</span>';
-  $("#scoreNow").textContent = totalScore();
-  if (drawer) {
-    const g = rd.pick === null ? "（沒作答）" : esc(rd.opts[rd.pick]);
-    $("#stageMsg").innerHTML = `<div class="mid">${result}</div><div class="sub">題目</div><div class="word">${esc(rd.word)}</div>
-      <div class="sub">${label(other(me))} 猜：<b>${g}</b></div><div class="sub">${rd.lit ? "到畫廊可以看重播 🎬" : "你畫了什麼？到畫廊才揭曉 🤭"}</div>`;
-    $("#stageMsg").hidden = false;
-    $("#underMsg").textContent = "";
-  } else {
-    $("#sendBtn").hidden = true;
-    $("#opts").querySelectorAll(".opt").forEach((b, i) => {
-      b.disabled = true;
-      b.classList.toggle("right", i === ci);
-      b.classList.toggle("wrong", i === rd.pick && !ok);
-    });
-    const banner = $("#banner"); banner.innerHTML = result; banner.hidden = false;
-    $("#underMsg").textContent = `答案是「${rd.word}」`;
-  }
-  if (withSound) {
-    setTimeout(() => { ok ? Snd.correct() : Snd.wrong(); }, 350);
-    if (ok) vibrate(30);
-  }
-}
-
-function choose(r, i) {
-  const rd = rounds[r];
-  if (!rd || curRound !== r || curPhase !== "draw" || rd.pick !== null) return;
-  rd.sel = i;
-  Snd.tap();
-  $("#opts").querySelectorAll(".opt").forEach((b, j) => b.classList.toggle("picked", j === i));
-  $("#sendBtn").disabled = false;
-}
-function submitAnswer(r, forcedMs) {
-  const rd = rounds[r];
-  if (!rd || rd.pick !== null || rd.sel === null) return;
-  rd.pick = rd.sel;
-  rd.ms = forcedMs ?? Math.round(clamp(serverNow() - tlCur.draw, 0, T.DRAW));
-  set(R("answers/" + r), { pick: rd.pick, ms: rd.ms }).catch(() => {});
-  Snd.lock(); vibrate(20);
-  $("#opts").querySelectorAll(".opt").forEach(b => { b.disabled = true; });
-  $("#sendBtn").disabled = true;
-  $("#underMsg").textContent = `已送出「${rd.opts[rd.pick]}」！`;
-}
-$("#sendBtn").addEventListener("click", () => {
-  if (curPhase === "draw") submitAnswer(curRound);
-});
-
-function addChunk(r, v) {
-  const rd = rounds[r];
-  if (!rd || !v || typeof v.s !== "number") return;
-  const pts = decodePts(v.p);
-  if (!pts.length) return;
-  const arr = rd.strokes[v.s] || (rd.strokes[v.s] = []);
-  let prev = arr[arr.length - 1] || null;
-  arr.push(...pts);
-  if (r === curRound) {
-    const ctx = $("#gcv").getContext("2d");
-    penStyle(ctx);
-    for (const p of pts) { drawSeg(ctx, prev, p); prev = p; }
-  }
-}
-
-/* ================= 畫家：盲畫 ================= */
-let drawing = false, drawRound = -1, activePid = null, curStroke = null, pending = [], flushTimer = null;
-function startDrawing(r) {
-  drawing = true; drawRound = r; activePid = null; curStroke = null; pending = [];
-  clearInterval(flushTimer); flushTimer = setInterval(flush, 80);
-  if (rounds[r]?.lit) requestAnimationFrame(() => { const cv = $("#dcv"); fitCanvas(cv); drawAll(cv.getContext("2d"), rounds[r].strokes); });
-}
-function stopDrawing() {
-  if (drawing) flush();
-  drawing = false; activePid = null; curStroke = null;
-  clearInterval(flushTimer); flushTimer = null;
-}
-function addPoint(ev) {
-  if (!curStroke) return;
-  const rect = $("#bbox").getBoundingClientRect();
-  const x = clamp((ev.clientX - rect.left) / rect.width, 0, 1);
-  const y = clamp((ev.clientY - rect.top) / rect.height, 0, 1);
-  const t = Math.round(clamp(serverNow() - tlCur.draw, 0, T.DRAW));
-  const pts = curStroke.pts, last = pts[pts.length - 1];
-  if (last && Math.hypot(x - last.x, y - last.y) < .004) return;
-  const p = { x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000, t };
-  pts.push(p);
-  if (rounds[drawRound]?.lit) { const ctx = $("#dcv").getContext("2d"); penStyle(ctx); drawSeg(ctx, last || null, p); }
-  let e = pending[pending.length - 1];
-  if (!e || e.s !== curStroke.s || e.pts.length >= 150) { e = { s: curStroke.s, pts: [] }; pending.push(e); }
-  e.pts.push(p);
-}
-function flush() {
-  if (!pending.length || !code) return;
-  const batch = pending; pending = [];
-  for (const e of batch) if (e.pts.length) push(R("strokes/" + drawRound), { s: e.s, p: encodePts(e.pts) }).catch(() => {});
-}
-const bo = $("#blackout");
-bo.addEventListener("pointerdown", e => {
-  e.preventDefault();
-  if (!drawing || activePid !== null) return;
-  const rd = rounds[drawRound]; if (!rd || rd.strokes.length >= 400) return;
-  activePid = e.pointerId;
-  try { bo.setPointerCapture(e.pointerId); } catch {}
-  curStroke = { s: rd.strokes.length, pts: [] };
-  rd.strokes.push(curStroke.pts);
-  addPoint(e);
-});
-bo.addEventListener("pointermove", e => {
-  if (!drawing || e.pointerId !== activePid) return;
-  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
-  (evs.length ? evs : [e]).forEach(addPoint);
-});
-const endStroke = e => { if (e.pointerId === activePid) { activePid = null; curStroke = null; } };
-bo.addEventListener("pointerup", endStroke);
-bo.addEventListener("pointercancel", endStroke);
-bo.addEventListener("touchmove", e => e.preventDefault(), { passive: false });
-$("#doneBtn").addEventListener("pointerdown", e => e.stopPropagation());
-$("#doneBtn").addEventListener("click", () => {
-  if (!drawing) return;
-  const r = drawRound;
-  stopDrawing();
-  Snd.lock();
-  set(R("fin/" + r), true).catch(() => {});
-  $("#doneBtn").hidden = true; $("#bwait").hidden = false;
-});
-
-/* ================= 結算 ================= */
-function commentFor(total) {
-  if (total >= 800) return "你們是心靈相通的畫家 💞";
-  if (total >= 600) return "默契好到可以去上綜藝節目了 📺";
-  if (total >= 400) return "有點默契，也有點靈異 👻";
-  if (total >= 200) return "這是抽象派吧 🎨";
-  if (total > 0) return "畢卡索看了都說讚（看不懂的那種）🖼️";
-  return "你們確定是在玩同一個遊戲嗎？🤔";
-}
-function endGame() {
-  if (endedGame === game) return;
-  endedGame = game;
-  stopDrawing();
-  roundUnsubs.forEach(f => f()); roundUnsubs = [];
-  $("#blackout").hidden = true; $("#overlay").hidden = true;
-  document.body.classList.remove("urgent");
-  rounds.forEach(rd => { if (rd) rd.revealed = true; });
-  const total = totalScore();
-  const correct = rounds.filter(rd => rd && scoreOf(rd) > 0).length;
-  $("#finalCorrect").textContent = `答對 ${correct} / ${ROUNDS} 題`;
-  $("#finalComment").textContent = commentFor(total);
-  readyState = {};
-  renderAgain();
-  show("result");
-  Snd.fanfare();
-  armPresence();
-  const el = $("#finalScore"), t0 = performance.now();
-  (function count(now) {
-    const k = clamp((now - t0) / 1200, 0, 1);
-    el.textContent = Math.round(total * (1 - Math.pow(1 - k, 3)));
-    if (k < 1) requestAnimationFrame(count);
-  })(t0);
-  buildShareImage(total, correct).catch(e => console.warn("share image", e));
-}
-
-$("#againBtn").addEventListener("click", () => {
-  if (!code || partnerLeft) return;
-  Snd.tap();
-  set(R("ready/" + me), true).catch(() => {});
-});
-function onReady() {
-  renderAgain();
-  if (isHost && readyState.A && readyState.B && st && st.phase === "end") startGame();
-}
-function renderAgain() {
-  const btn = $("#againBtn"), s = $("#againStatus");
-  $("#modeResult").hidden = !isHost || partnerLeft || !code;
-  if (partnerLeft || !code) { btn.disabled = true; s.textContent = "對方已經離開房間了，畫廊還能看到你關掉網頁為止"; return; }
-  const mine = !!readyState[me], theirs = !!readyState[other(me)];
-  btn.disabled = mine;
-  btn.textContent = mine ? "⏳ 等待對方…" : "🔁 再玩一局";
-  s.textContent = theirs && !mine ? `${label(other(me))} 想再玩一局！` : mine ? "對方按下「再玩一局」就會開始" : "";
-}
-
-/* ================= 畫廊（重播） ================= */
-let gi = 0, speed = 1, replayRaf = null;
-$("#galleryBtn").addEventListener("click", () => { Snd.tap(); show("gallery"); showCard(0); });
-$("#galBack").addEventListener("click", () => { cancelAnimationFrame(replayRaf); show("result"); });
-$("#galPrev").addEventListener("click", () => showCard((gi - 1 + rounds.length) % rounds.length));
-$("#galNext").addEventListener("click", () => showCard((gi + 1) % rounds.length));
-$("#galReplay").addEventListener("click", () => startReplay());
-$("#speedBtn").addEventListener("click", () => { speed = speed === 1 ? 2 : 1; $("#speedBtn").textContent = speed + "x"; startReplay(); });
-
-function showCard(i) {
-  if (!rounds.length) return;
-  gi = i; Snd.tap();
-  const rd = rounds[i];
-  if (!rd) return;
-  $("#galIdx").textContent = `${i + 1} / ${rounds.length}`;
-  $("#galTitle").innerHTML = `第 ${i + 1} 題・${label(rd.drawer)} 畫${isDrawer(rd) ? "（你畫的！）" : ""}・${LV_BADGE[rd.lv] || ""}`;
-  $("#galWord").textContent = rd.word;
-  const ok = scoreOf(rd) > 0;
-  $("#galGuess").textContent = rd.pick === null ? "⏰ 沒作答" : `${rd.opts[rd.pick]} ${ok ? "✅ +" + scoreOf(rd) : "❌"}`;
-  $("#galGuess").style.color = ok ? "var(--green)" : "var(--red)";
-  requestAnimationFrame(() => { fitCanvas($("#galcv")); startReplay(); });
-}
-function startReplay() {
-  cancelAnimationFrame(replayRaf);
-  const rd = rounds[gi]; if (!rd) return;
-  const ctx = $("#galcv").getContext("2d");
-  const ts = rd.strokes.flat().filter(Boolean).map(p => p.t);
-  const prog = $("#galProg");
-  if (!ts.length) {
-    drawAll(ctx, []);
-    ctx.fillStyle = "#b9aaa2"; ctx.font = `${ctx.canvas.width * .06}px Huninn, sans-serif`; ctx.textAlign = "center";
-    ctx.fillText("（畫家什麼都沒畫到 😶）", ctx.canvas.width / 2, ctx.canvas.height / 2);
-    prog.style.width = "100%";
-    return;
-  }
-  const from = Math.max(0, Math.min(...ts) - 300), to = Math.max(...ts) + 300;
-  const start = performance.now();
-  const frame = now => {
-    const tt = from + (now - start) * speed;
-    drawAll(ctx, rd.strokes, tt);
-    prog.style.width = clamp((tt - from) / (to - from), 0, 1) * 100 + "%";
-    if (tt < to) replayRaf = requestAnimationFrame(frame);
-  };
-  replayRaf = requestAnimationFrame(frame);
-}
-
-/* ================= 分享拼圖 ================= */
-let shareFile = null, shareUrl = null;
-async function buildShareImage(total, correct) {
-  shareFile = null;
-  try { await document.fonts.load("40px Huninn"); } catch {}
-  // 正方形 1080x1080：上面標題、中間 5x2 作品、下面網址
-  const W = 1080, H = 1080, cols = 5, pad = 36, gap = 18, tileW = 186, tileH = 248, labelH = 74, headH = 250, rowGap = 22;
-  const c = document.createElement("canvas"); c.width = W; c.height = H;
-  const x = c.getContext("2d");
-  const F = (size, bold) => `${bold ? "bold " : ""}${size}px Huninn, "PingFang TC", "Noto Sans TC", sans-serif`;
-  x.fillStyle = "#fdf6e6"; x.fillRect(0, 0, W, H);
-  x.strokeStyle = "#dbe7f3"; x.lineWidth = 2;
-  for (let yy = 40; yy < H; yy += 44) { x.beginPath(); x.moveTo(0, yy); x.lineTo(W, yy); x.stroke(); }
-  x.textAlign = "center"; x.fillStyle = "#3a2e2a";
-  x.font = F(96, true); x.fillText("盲畫", W / 2, 110);
-  x.font = F(40); x.fillText(`合作分數 ${total} / 1000・答對 ${correct} 題`, W / 2, 172);
-  x.font = F(36); x.fillStyle = "#e0566f"; x.fillText(commentFor(total), W / 2, 226, W - 2 * pad);
-  const gridW = cols * tileW + (cols - 1) * gap, left = (W - gridW) / 2;
-  const tile = document.createElement("canvas"); tile.width = tileW * 2; tile.height = tileH * 2;
-  const tx = tile.getContext("2d");
-  rounds.forEach((rd, i) => {
-    if (!rd) return;
-    const col = i % cols, row = Math.floor(i / cols);
-    const ox = left + col * (tileW + gap), oy = headH + row * (tileH + labelH + rowGap);
-    drawAll(tx, rd.strokes);
-    x.save();
-    x.fillStyle = "#3a2e2a"; roundRect(x, ox + 4, oy + 4, tileW, tileH, 16); x.fill();
-    roundRect(x, ox, oy, tileW, tileH, 16); x.clip(); x.drawImage(tile, ox, oy, tileW, tileH);
-    x.restore();
-    x.lineWidth = 3.5; x.strokeStyle = "#3a2e2a"; roundRect(x, ox, oy, tileW, tileH, 16); x.stroke();
-    const ok = scoreOf(rd) > 0;
-    const guessTxt = rd.pick === null ? "沒作答" : rd.opts[rd.pick];
-    x.textAlign = "left";
-    x.fillStyle = "#8a7a72"; x.font = F(23); x.fillText(`題：${rd.word}`, ox + 2, oy + tileH + 32, tileW);
-    x.fillStyle = ok ? "#2f9e67" : "#e04848"; x.font = F(25, true);
-    x.fillText(`猜：${guessTxt}${ok ? " ✅" : " ❌"}`, ox + 2, oy + tileH + 64, tileW);
-  });
-  x.textAlign = "center"; x.fillStyle = "#3a2e2a"; x.font = F(30);
-  x.fillText("閉著眼睛畫，你猜得出來嗎？一起來玩 👇", W / 2, H - 70);
-  x.font = F(28); x.fillStyle = "#4a7fc0"; x.fillText(BASE_URL, W / 2, H - 28);
-  const blob = await new Promise(res => c.toBlob(res, "image/png"));
-  if (!blob) return;
-  shareFile = new File([blob], "盲畫.png", { type: "image/png" });
-  if (shareUrl) URL.revokeObjectURL(shareUrl);
-  shareUrl = URL.createObjectURL(blob);
-}
-function roundRect(x, l, t, w, h, r) {
-  x.beginPath(); x.moveTo(l + r, t); x.arcTo(l + w, t, l + w, t + h, r); x.arcTo(l + w, t + h, l, t + h, r);
-  x.arcTo(l, t + h, l, t, r); x.arcTo(l, t, l + w, t, r); x.closePath();
-}
-$("#shareBtn").addEventListener("click", async () => {
-  Snd.tap();
-  if (!shareFile) { toast("圖片準備中，請再按一次 🙏"); return; }
-  const text = `我們在《盲畫》拿了 ${totalScore()} 分！閉著眼睛畫的你猜得出來嗎？ ${BASE_URL}`;
-  if (navigator.canShare && navigator.canShare({ files: [shareFile] })) {
-    try { await navigator.share({ files: [shareFile], text }); return; } catch (e) { if (e && e.name === "AbortError") return; }
-  }
-  $("#shareImg").src = shareUrl; $("#shareDl").href = shareUrl;
-  $("#shareOverlay").hidden = false;
-});
-$("#shareClose").addEventListener("click", () => { $("#shareOverlay").hidden = true; });
-
-/* ================= 螢幕常亮 ================= */
-let wakeLock = null;
-async function requestWakeLock() { try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {} }
-function releaseWakeLock() { try { wakeLock?.release(); } catch {} wakeLock = null; }
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && code) requestWakeLock(); });
-window.addEventListener("resize", () => {
-  if (screen === "game" && rounds[curRound]) { const cv = $("#gcv"); fitCanvas(cv); drawAll(cv.getContext("2d"), rounds[curRound].strokes); }
-});
-</script>
+<script src="js/i18n.js?v=2.0.0"></script>
+<script src="js/i18n.en.js?v=2.0.0"></script>
+<script src="js/words.js?v=2.0.0"></script>
+<script src="js/words.en.js?v=2.0.0"></script>
+<script src="js/bot.js?v=2.0.0"></script>
+<script type="module" src="js/game.js?v=2.0.0"></script>
 </body>
 </html>
