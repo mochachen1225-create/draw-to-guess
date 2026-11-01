@@ -1,7 +1,7 @@
-// 語言：玩家選過就照選的；在 itch.io 上預設英文；其他看瀏覽器語言
+// 語言：玩家選過就照選的；在 itch.io、Newgrounds 上預設英文；其他看瀏覽器語言
 const LANG = (() => {
   try { const s = localStorage.getItem("blind-draw-lang"); if (s === "zh" || s === "en") return s; } catch {}
-  if (/(^|\.)(itch\.io|itch\.zone|hwcdn\.net)$/.test(location.hostname)) return "en";
+  if (/(^|\.)(itch\.io|itch\.zone|hwcdn\.net|newgrounds\.com|ungrounded\.net)$/.test(location.hostname)) return "en";
   return /^zh/i.test(navigator.language || "") ? "zh" : "en";
 })();
 document.documentElement.lang = LANG === "en" ? "en" : "zh-Hant";

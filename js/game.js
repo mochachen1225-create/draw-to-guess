@@ -15,7 +15,7 @@ const firebaseConfig = {
   appId: "1:1013891427946:web:83d3dd937bab6e747f2413"
 };
 
-const VERSION = "2.0.2";
+const VERSION = "2.0.3";
 const CHANGES = [
   "新增單人模式：電腦畫給你猜（而且畫得很爛）",
   "新增題目包：綜合、台灣味、動物、抽象、今日挑戰",
@@ -28,6 +28,10 @@ const ROUNDS = 10;
 const TIME = { INTRO: 2500, WARN: 1700, MOD: 1200, PEEK: 2000, DRAW: 10000, FAST: 5000, REVEAL: 3500 };
 const OLD_ROOM_MS = 2 * 60 * 60 * 1000;
 const BASE_URL = location.origin + location.pathname;
+// 打包到 itch／Newgrounds 時，遊戲跑在 iframe 裡，網址是平台的檔案主機：
+// 分享用遊戲頁網址（GAME_URL），房間邀請連結用可以直接開的網址（INVITE_URL）
+const SHARE_URL = window.GAME_URL || BASE_URL;
+const INVITE_URL = window.INVITE_URL || BASE_URL;
 const REACTS = ["😂", "🤔", "😱", "👍"];
 const DAILY_EPOCH = Date.UTC(2026, 10, 1);
 
@@ -323,7 +327,7 @@ $("#joinBtn").addEventListener("click", async () => {
 });
 
 $("#shareCodeBtn").addEventListener("click", async () => {
-  const url = `${BASE_URL}?room=${code}`;
+  const url = `${INVITE_URL}?room=${code}`;
   const text = T("來玩《盲畫》！房間代碼：{0}", code);
   if (navigator.share) { try { await navigator.share({ text, url }); } catch {} return; }
   try { await navigator.clipboard.writeText(`${text}\n${url}`); toast(T("已複製邀請文字，貼給朋友吧！")); }
@@ -1012,7 +1016,7 @@ async function buildShareImage(total, correct) {
   });
   x.textAlign = "center"; x.fillStyle = "#3a2e2a"; x.font = F(30);
   x.fillText(T("閉著眼睛畫，你猜得出來嗎？一起來玩 👇"), Wd / 2, H - 70, Wd - 2 * pad);
-  x.font = F(28); x.fillStyle = "#4a7fc0"; x.fillText(BASE_URL, Wd / 2, H - 28);
+  x.font = F(28); x.fillStyle = "#4a7fc0"; x.fillText(SHARE_URL, Wd / 2, H - 28, Wd - 72);
   const blob = await new Promise(res => c.toBlob(res, "image/png"));
   if (!blob) return;
   shareFile = new File([blob], "blind-draw.png", { type: "image/png" });
@@ -1025,7 +1029,7 @@ function roundRect(x, l, t, w, h, r) {
 }
 function shareText() {
   const head = st.th === "daily" ? T("盲畫 今日挑戰 #{0}", todayNo()) + (mode === "solo" ? " 🤖" : "") : T("盲畫") + (mode === "solo" ? " 🤖" : "");
-  return `${head}\n${squares()}\n${T("{0} 分・答對 {1}/10", totalScore(), rounds.filter(rd => scoreOf(rd) > 0).length)}\n${BASE_URL}`;
+  return `${head}\n${squares()}\n${T("{0} 分・答對 {1}/10", totalScore(), rounds.filter(rd => scoreOf(rd) > 0).length)}\n${SHARE_URL}`;
 }
 $("#shareBtn").addEventListener("click", async () => {
   Snd.tap();
