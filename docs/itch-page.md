@@ -35,11 +35,11 @@
 | 類別 | 勾選 | 說明 |
 |---|---|---|
 | Graphics | **Yes** | 封面和宣傳圖用 Flow／Gemini 生成。遊戲裡的畫面全部是程式畫的 |
-| Sound | No | 音效是程式即時合成，沒有用生成式 AI 產生音檔 |
+| Sound | **Yes** | 試玩廣告的配樂由 Gemini 生成（遊戲內音效是程式即時合成） |
 | Text and dialogue | **Yes** | 英文翻譯和部分文案由 AI 協助 |
 | Code | **Yes** | 程式由 AI 協助撰寫 |
 
-> 請 Katie 最後確認一次。Newgrounds 版的封面和圖示要用程式畫的版本（`promo/newgrounds/`），不放 AI 圖。
+> Katie 已決定四項都勾 Yes（2026/11/1）。Newgrounds 版的封面和圖示要用程式畫的版本（`promo/newgrounds/`），不放 AI 圖。
 
 ## 頁面文案（英文，itch 主要）
 
