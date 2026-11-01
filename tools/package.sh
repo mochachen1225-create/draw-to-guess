@@ -3,6 +3,7 @@
 #
 # 用法：
 #   ./tools/package.sh [itch 遊戲頁網址] [Newgrounds 遊戲頁網址]
+# itch 預設 https://mocha-cat-team.itch.io/blind-draw；Newgrounds 還沒有網址時先指向 GitHub Pages
 # 例如：
 #   ./tools/package.sh https://xxx.itch.io/blind-draw https://www.newgrounds.com/portal/view/123456
 #
@@ -16,7 +17,7 @@ cd "$(dirname "$0")/.."
 ROOT="$(pwd)"
 VERSION="$(tr -d ' \n' < VERSION)"
 PAGES_URL="https://mochachen1225-create.github.io/draw-to-guess/"
-ITCH_URL="${1:-$PAGES_URL}"
+ITCH_URL="${1:-https://mocha-cat-team.itch.io/blind-draw}"
 NG_URL="${2:-$PAGES_URL}"
 
 build() {

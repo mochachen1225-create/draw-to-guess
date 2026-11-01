@@ -7,7 +7,7 @@
 | 欄位 | 內容 |
 |---|---|
 | Title | Blind Draw（盲畫） |
-| Project URL | `blind-draw`（建議） |
+| Project URL | `blind-draw` → https://mocha-cat-team.itch.io/blind-draw |
 | Short description / tagline | Draw with your screen blacked out. Your friend guesses. Nobody wins, everybody laughs. |
 | Classification | Games |
 | Kind of project | HTML |
@@ -21,7 +21,7 @@
 
 ## 上傳與嵌入（itch）
 
-1. 在 Mac 上執行打包：`./tools/package.sh <itch 遊戲頁網址> <Newgrounds 遊戲頁網址>`，產出在 `dist/`
+1. 在 Mac 上執行打包：`./tools/package.sh`（itch 網址已內建；Newgrounds 上架後再加第二個參數），產出在 `dist/`
 2. Uploads：上傳 `blind-draw-itch-<版本>.zip`，勾 **This file will be played in the browser**
 3. Embed options：
    - Viewport dimensions：**420 × 860**
