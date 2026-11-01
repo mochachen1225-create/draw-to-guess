@@ -60,7 +60,7 @@
 >
 > **Daily challenge**: everyone in the world gets the same 10 prompts each day. Share your 🟩🟥 result.
 >
-> Prompt packs: Mix · Taiwan · Animals · Abstract · Daily
+> Prompt packs: Mix · Classics · Taiwan · Animals · Abstract · Daily
 > Prefer to see your lines? Switch to **Lights on** mode.
 >
 > No sign-up, no ads, no personal data. Works in your phone's browser. English / 中文.
@@ -92,7 +92,10 @@
 | Newgrounds 圖示 | `promo/newgrounds/icon.png` | 1920×1080 | 否（程式畫） |
 | 試玩廣告 | `promo/trailer-en.mp4`、`trailer-zh.mp4`（28 秒） | 1080×1920 | 部分（Flow 沙發鏡頭、Gemini 配樂；片頭片尾和遊戲畫面是程式畫的） |
 
-## Newgrounds
+## Newgrounds（暫緩）
+
+> 2026/11/1 Katie 決定：短期只上 itch，Newgrounds 先不走。打包腳本和 `promo/newgrounds/icon.png` 留著備用。
+
 
 - 上傳 `blind-draw-newgrounds-<版本>.zip`，Embed **420 × 860**，勾 Touchscreen friendly
 - 圖示用 `promo/newgrounds/icon.png`（程式畫，沒有 AI）

@@ -15,8 +15,9 @@ const firebaseConfig = {
   appId: "1:1013891427946:web:83d3dd937bab6e747f2413"
 };
 
-const VERSION = "2.0.3";
+const VERSION = "2.1.0";
 const CHANGES = [
+  "新增題目包：🌎 西洋經典（萬聖節、聖誕節、童話怪物、世界地標）",
   "新增單人模式：電腦畫給你猜（而且畫得很爛）",
   "新增題目包：綜合、台灣味、動物、抽象、今日挑戰",
   "新增爆笑題：穿西裝的貓、阿嬤覺得你會冷…",
@@ -453,7 +454,9 @@ function buildDeck(tk, { solo = false } = {}) {
       add(lv, "抽象", fresh(g.w), groups.slice(1, 4).map(x => pick(x.w, rng)));
     } else if (lv === "簡單") {
       const cat = catWithWord();
-      add(lv, cat, fresh(WORDS[cat]), shuffle(CONCRETE.filter(c => c !== cat), rng).slice(0, 3).map(c => pick(WORDS[c], rng)));
+      // 西洋經典給外國玩家：干擾選項不放台灣在地的詞
+      const others = CONCRETE.filter(c => c !== cat && !(th.tag === "world" && c === "台灣味"));
+      add(lv, cat, fresh(WORDS[cat]), shuffle(others, rng).slice(0, 3).map(c => pick(WORDS[c], rng)));
     } else if (lv === "普通") {
       const cat = catWithWord();
       add(lv, cat, fresh(WORDS[cat]), WORDS[cat]);

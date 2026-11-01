@@ -26,6 +26,7 @@ I18N.en = {
   "新增搞怪回合：手抖、左右顛倒、只能一筆、只有 5 秒": "New twist rounds: shaky hands, mirror, one stroke, 5 seconds",
   "猜的人可以按表情，畫家重播時才看得到": "Guessers can react; the drawer sees reactions in the replay",
   "支援英文版": "Now in English",
+  "新增題目包：🌎 西洋經典（萬聖節、聖誕節、童話怪物、世界地標）": "New pack: 🌎 Classics (Halloween, Christmas, monsters, landmarks)",
 
   // 連線
   "連線中…": "Connecting…",
