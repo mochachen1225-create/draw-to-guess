@@ -90,7 +90,7 @@
 | itch 截圖 ×6 | `promo/itch/screenshot-en-*.png`、`screenshot-zh-*.png` | 1080×1350 | 否（遊戲實機） |
 | 橫式主視覺 | `promo/itch/banner.png` | 1920×1080 | 是（Gemini） |
 | Newgrounds 圖示 | `promo/newgrounds/icon.png` | 1920×1080 | 否（程式畫） |
-| 試玩廣告 | `promo/trailer-en.mp4`、`trailer-zh.mp4` | 1080×1920 | 部分（Flow 鏡頭） |
+| 試玩廣告 | `promo/trailer-en.mp4`、`trailer-zh.mp4`（28 秒） | 1080×1920 | 部分（Flow 沙發鏡頭、Gemini 配樂；片頭片尾和遊戲畫面是程式畫的） |
 
 ## Newgrounds
 
