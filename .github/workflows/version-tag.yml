@@ -1,0 +1,42 @@
+# 版本號改了就自動打 tag（v<版本>），由 GitHub 自己打：雲端 Claude 推不了 tag，也不用 Mac。
+# 版本號在 VERSION。已經有同名 tag 就跳過，不會覆蓋。
+# 補打舊版本：Actions → 版本 tag → Run workflow，填版本號和 commit。
+name: 版本 tag
+on:
+  push:
+    branches: [claude/wizardly-ramanujan-lk2ldv]
+    paths: ['VERSION']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本號（不含 v，例：2.2.2）；空白＝用目前的版本號'
+        default: ''
+      commit:
+        description: '要打在哪個 commit；空白＝最新'
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: version-tag
+  cancel-in-progress: false
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 打 tag
+        env:
+          IN_VERSION: ${{ github.event.inputs.version }}
+          IN_COMMIT: ${{ github.event.inputs.commit }}
+        run: |
+          ver="${IN_VERSION:-$(tr -d ' \n' < VERSION)}"
+          sha="${IN_COMMIT:-HEAD}"
+          if ! printf '%s' "$ver" | grep -Eq '^[0-9]+(\.[0-9]+)*$'; then echo "版本號看不懂：$ver"; exit 1; fi
+          if git rev-parse -q --verify "refs/tags/v$ver" >/dev/null; then echo "v$ver 已經有了，跳過"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$ver" "$sha" -m "v$ver"
+          git push origin "v$ver"
+          echo "已打 v$ver → $(git rev-parse --short "$sha")"
