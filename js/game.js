@@ -15,7 +15,7 @@ const firebaseConfig = {
   appId: "1:1013891427946:web:83d3dd937bab6e747f2413"
 };
 
-const VERSION = "2.0.1";
+const VERSION = "2.0.2";
 const CHANGES = [
   "新增單人模式：電腦畫給你猜（而且畫得很爛）",
   "新增題目包：綜合、台灣味、動物、抽象、今日挑戰",
@@ -209,7 +209,15 @@ async function ensureOnline() {
   goOnline(db);
   if (!connected) await withTimeout(new Promise(res => connWaiters.push(res)), 10000);
 }
-function showBusy() {
+// 連不上時顯示原因：設定問題（匿名登入沒開、網域沒授權）跟人太多分開講，才知道要修哪裡
+function showBusy(err) {
+  const c = String((err && (err.code || err.message)) || "");
+  let why = "";
+  if (/admin-restricted|operation-not-allowed|ADMIN_ONLY/i.test(c)) why = T("原因：Firebase 的「匿名登入」還沒開啟");
+  else if (/unauthorized-domain|api-key|invalid-api/i.test(c)) why = T("原因：Firebase 設定有問題（{0}）", c);
+  else if (/network/i.test(c)) why = T("原因：網路連不上");
+  else if (c) why = T("原因：{0}", c);
+  $("#busyWhy").textContent = why; $("#busyWhy").hidden = !why;
   $("#busy").hidden = false;
 }
 $("#busyClose").addEventListener("click", () => { $("#busy").hidden = true; });
@@ -263,7 +271,7 @@ $("#createBtn").addEventListener("click", async () => {
   Snd.tap();
   const btn = $("#createBtn"); btn.disabled = true; btn.textContent = T("連線中…");
   const done = () => { btn.disabled = false; btn.textContent = T("✏️ 建立房間（兩人）"); };
-  try { await ensureOnline(); } catch (e) { console.warn(e); done(); showBusy(); return; }
+  try { await ensureOnline(); } catch (e) { console.warn(e); done(); showBusy(e); return; }
   await cleanupOldRooms();
   let made = null, lastErr = null;
   for (let i = 0; i < 12 && !made; i++) {
@@ -275,7 +283,7 @@ $("#createBtn").addEventListener("click", async () => {
   }
   done();
   if (!made) {
-    if (lastErr && lastErr.message === "timeout") { showBusy(); return; }
+    if (lastErr && lastErr.message === "timeout") { showBusy(lastErr); return; }
     const denied = /permission/i.test(String(lastErr && (lastErr.code || lastErr.message)));
     toast(denied ? T("建立房間失敗：資料庫拒絕寫入（請確認 Firebase 安全規則已發布）") : T("建立房間失敗：{0}", lastErr ? lastErr.message : "?"), 6000);
     return;
@@ -296,11 +304,11 @@ $("#joinBtn").addEventListener("click", async () => {
   const c = $("#codeInput").value.trim();
   if (!/^\d{4}$/.test(c)) { toast(T("請輸入 4 位數字的房間代碼")); return; }
   const btn = $("#joinBtn"); btn.disabled = true;
-  try { await ensureOnline(); } catch (e) { console.warn(e); btn.disabled = false; showBusy(); return; }
+  try { await ensureOnline(); } catch (e) { console.warn(e); btn.disabled = false; showBusy(e); return; }
   try { await withTimeout(set(ref(db, `rooms/${c}/guest`), uid), 8000); }
   catch (e) {
     btn.disabled = false;
-    if (e.message === "timeout") showBusy(); else toast(T("找不到這個房間，或房間已經滿了 🙈"));
+    if (e.message === "timeout") showBusy(e); else toast(T("找不到這個房間，或房間已經滿了 🙈"));
     return;
   }
   btn.disabled = false;
