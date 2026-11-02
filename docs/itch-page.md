@@ -39,7 +39,7 @@
 | Text and dialogue | **Yes** | 英文翻譯和部分文案由 AI 協助 |
 | Code | **Yes** | 程式由 AI 協助撰寫 |
 
-> Katie 已決定四項都勾 Yes（2026/11/1）。Newgrounds 版的封面和圖示要用程式畫的版本（`promo/newgrounds/`），不放 AI 圖。
+> 摩卡與貓貓小隊已決定四項都勾 Yes（2026/11/1）。Newgrounds 版的封面和圖示要用程式畫的版本（`promo/newgrounds/`），不放 AI 圖。
 
 ## 頁面文案（英文，itch 主要）
 
@@ -94,7 +94,7 @@
 
 ## Newgrounds（暫緩）
 
-> 2026/11/1 Katie 決定：短期只上 itch，Newgrounds 先不走。打包腳本和 `promo/newgrounds/icon.png` 留著備用。
+> 2026/11/1 摩卡與貓貓小隊決定：短期只上 itch，Newgrounds 先不走。打包腳本和 `promo/newgrounds/icon.png` 留著備用。
 
 
 - 上傳 `blind-draw-newgrounds-<版本>.zip`，Embed **420 × 860**，勾 Touchscreen friendly
